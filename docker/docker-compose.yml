@@ -1,0 +1,32 @@
+version: "3.5"
+
+services:
+  nginx:
+    container_name: nginx
+    build: ./nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "8080:80"
+    networks:
+      dobot_network:
+        ipv4_address: 172.10.0.2
+
+  uwsgi:
+    container_name: uwsgi
+    build:
+      context: ./uwsgi
+    volumes:
+      - ./uwsgi:/app/
+    networks:
+      dobot_network:
+        ipv4_address: 172.10.0.3
+
+networks:
+  dobot_network:
+    name: dobot_network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.10.0.0/24
