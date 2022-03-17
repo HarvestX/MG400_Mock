@@ -7,7 +7,8 @@ services:
     volumes:
       - ./nginx/shared_files/nginx.conf:/etc/nginx/nginx.conf
     ports:
-      - "8080:80"
+      - "2999:2999"
+      - "30003:30003"
     networks:
       dobot_network:
         ipv4_address: 172.10.0.2
