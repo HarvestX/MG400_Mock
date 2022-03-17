@@ -4,4 +4,4 @@ RUN pip install uwsgi flask
 RUN mkdir /app
 WORKDIR /app
 
-CMD ["uwsgi", "--ini", "/app/uwsgi.ini"]
+CMD ["uwsgi", "--ini", "/app/config/uwsgi.ini"]

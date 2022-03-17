@@ -5,7 +5,7 @@ services:
     container_name: nginx
     build: ./nginx
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/shared_files/nginx.conf:/etc/nginx/nginx.conf
     ports:
       - "8080:80"
     networks:
@@ -17,7 +17,8 @@ services:
     build:
       context: ./uwsgi
     volumes:
-      - ./uwsgi:/app/
+      - ./uwsgi/shared_files/uwsgi.ini:/app/config/uwsgi.ini
+      - ../app/src/main.py:/app/main.py
     networks:
       dobot_network:
         ipv4_address: 172.10.0.3
