@@ -12,10 +12,6 @@ class DobotServer(Thread):
         super().__init__()
 
     def run(self):
-        thread = Thread(target=self.__execute)
-        thread.run()
-
-    def __execute(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((self.socket_info[0], self.socket_info[1]))  # IPとポート番号を指定
         s.listen(10)
