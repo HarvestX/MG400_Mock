@@ -7,19 +7,18 @@ services:
     volumes:
       - ./nginx/shared_files/nginx.conf:/etc/nginx/nginx.conf
     ports:
-      - "2999:2999"
+      - "29999:29999"
       - "30003:30003"
     networks:
       dobot_network:
         ipv4_address: 172.10.0.2
 
-  uwsgi:
-    container_name: uwsgi
+  dobot:
+    container_name: dobot
     build:
-      context: ./uwsgi
+      context: ./dobot
     volumes:
-      - ./uwsgi/shared_files/uwsgi.ini:/app/config/uwsgi.ini
-      - ../app/src/main.py:/app/main.py
+      - ../app/src/:/app/
     networks:
       dobot_network:
         ipv4_address: 172.10.0.3
