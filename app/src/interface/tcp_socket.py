@@ -2,8 +2,6 @@ from abc import abstractmethod
 import socket
 from threading import Thread
 
-import logging
-
 
 class TcpSocket(Thread):
 
