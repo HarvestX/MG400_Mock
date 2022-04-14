@@ -45,7 +45,7 @@ class RealtimeTcp(TcpSocket):
                     connection.send(packet.packet())
                     self.__socket_pool.put(connection)
                 except socket.error:
-                    print('tcp connection close')
+                    self.logger.info('tcp connection close')
                     connection.close()
 
                 count = count - 1
