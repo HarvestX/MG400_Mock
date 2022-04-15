@@ -19,6 +19,7 @@ class RealtimePacket:
         (0.0, 8), # V robot
         (0.0, 8), # I robot
         (0.0, 8), # Program state
+        (0.0, 8), # Safety Status
         [ (0.0, 8), (0.0, 8), (0.0, 8) ], # Tool Accelerometer values
         [ (0.0, 8), (0.0, 8), (0.0, 8) ], # Elbow position
         [ (0.0, 8), (0.0, 8), (0.0, 8) ], # Elbow velocity
