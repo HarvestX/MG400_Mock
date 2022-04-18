@@ -53,7 +53,7 @@ class RealtimePacket:
         ], # Reserved bits
     ]
 
-    __result = None
+    __result: bytearray = None
 
     def packet(self):
         if self.__result is None:
@@ -64,8 +64,26 @@ class RealtimePacket:
     def build(self):
         self.__result = self.__concat_contents(self.contents)
 
+    def replace_contents(self, begin: int, end: int, value):
+        if self.__result is None:
+            self.build()
+
+        expected_bytes_count = end - begin + 1
+        if isinstance(value, float) and expected_bytes_count != 8 or\
+            isinstance(value, int) and expected_bytes_count != 2:
+                raise ValueError('Invalid replace segment or given value type')
+
+        if isinstance(value, float):
+            bytes_value = bytearray(struct.pack('<d', value))
+        else:
+            bytes_value = bytearray(value.to_bytes(2, 'big'))
+
+        for i in range(0, expected_bytes_count):
+            self.__result[begin + i] = bytes_value[i]
+
+
     def __concat_contents(self, contents):
-        ret = bytes()
+        ret = bytearray()
 
         if isinstance(contents, tuple):
             (value, bytes_count) = contents
@@ -75,6 +93,6 @@ class RealtimePacket:
             return value.to_bytes(bytes_count, 'big')
 
         for item in contents:
-            ret = self.__concat_contents(item) + ret
+            ret = bytearray(self.__concat_contents(item) + ret)
 
         return ret
