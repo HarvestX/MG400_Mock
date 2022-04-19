@@ -49,7 +49,7 @@ class RealtimePacket:
             (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8),
             (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8),
             (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8),
-            (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8)
+            (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (12345.0, 8)
         ], # Reserved bits
     ]
 
@@ -76,13 +76,13 @@ class RealtimePacket:
         if isinstance(value, float):
             bytes_value = bytearray(struct.pack('<d', value))
         else:
-            bytes_value = bytearray(value.to_bytes(2, 'big'))
+            bytes_value = bytearray(value.to_bytes(2, 'little'))
 
         for i in range(0, expected_bytes_count):
             self.__result[begin + i] = bytes_value[i]
 
 
-    def __concat_contents(self, contents):
+    def __concat_contents(self, contents) -> bytearray:
         ret = bytearray()
 
         if isinstance(contents, tuple):
@@ -90,9 +90,9 @@ class RealtimePacket:
             if isinstance(value, float):
                 return struct.pack('<d', value)
 
-            return value.to_bytes(bytes_count, 'big')
+            return value.to_bytes(bytes_count, 'little')
 
         for item in contents:
-            ret = bytearray(self.__concat_contents(item) + ret)
+            ret += bytearray(self.__concat_contents(item))
 
         return ret
