@@ -1,98 +1,51 @@
-import struct
+import numpy as np
+
+RealtimePacketType = np.dtype([
+    ('len', np.uint16,),
+    ('reserve', np.uint16, (3, )),
+    ('digital_input_bits', np.uint64,),
+    ('digital_outputs', np.uint64,),
+    ('robot_mode', np.uint64,),
+    ('controller_timer', np.uint64,),
+    ('run_time', np.uint64,),
+    ('test_value', np.uint64,),
+    ('safety_mode', np.float64,),
+    ('speed_scaling', np.float64,),
+    ('linear_momentum_norm', np.float64,),
+    ('v_main', np.float64,),
+    ('v_robot', np.float64,),
+    ('i_robot', np.float64,),
+    ('program_state', np.float64,),
+    ('safety_status', np.float64,),
+    ('tool_accelerometer_values', np.float64, (3, )),
+    ('elbow_position', np.float64, (3, )),
+    ('elbow_velocity', np.float64, (3, )),
+    ('q_target', np.float64, (6, )),
+    ('qd_target', np.float64, (6, )),
+    ('qdd_target', np.float64, (6, )),
+    ('i_target', np.float64, (6, )),
+    ('m_target', np.float64, (6, )),
+    ('q_actual', np.float64, (6, )),
+    ('qd_actual', np.float64, (6, )),
+    ('i_actual', np.float64, (6, )),
+    ('i_control', np.float64, (6, )),
+    ('tool_vector_actual', np.float64, (6, )),
+    ('TCP_speed_actual', np.float64, (6, )),
+    ('TCP_force', np.float64, (6, )),
+    ('tool_vector_target', np.float64, (6, )),
+    ('TCP_speed_target', np.float64, (6, )),
+    ('motor_temperatures', np.float64, (6, )),
+    ('joint_modes', np.float64, (6, )),
+    ('v_actual', np.float64, (6, )),
+    ('dummy', np.float64, (9, 6))])
+
 
 class RealtimePacket:
+    contents = np.array([0], dtype=RealtimePacketType)
 
-    # (value(int|double), bytes_count)
-    contents = [
-        (0, 2), # Message size
-        [ (0, 2), (0, 2), (0, 2) ], # Reserved bits
-        (0.0, 8), # Digital input bits
-        (0.0, 8), # Digital outputs
-        (0.0, 8), # Robot mode
-        (0.0, 8), # Controller timer
-        (0.0, 8), # Time
-        (0.0, 8), # test_value
-        (0.0, 8), # Safety mode
-        (0.0, 8), # Speed scaling
-        (0.0, 8), # Linear momentum norm
-        (0.0, 8), # V main
-        (0.0, 8), # V robot
-        (0.0, 8), # I robot
-        (0.0, 8), # Program state
-        (0.0, 8), # Safety Status
-        [ (0.0, 8), (0.0, 8), (0.0, 8) ], # Tool Accelerometer values
-        [ (0.0, 8), (0.0, 8), (0.0, 8) ], # Elbow position
-        [ (0.0, 8), (0.0, 8), (0.0, 8) ], # Elbow velocity
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # q target
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # qd target
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # qdd target
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # I target
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # M target
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # q actual
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # qd actual
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # I actual
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # I control
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # Tool vector actual
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # TCP speed actual
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # TCP force
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # Tool vector target
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # TCP speed target
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # Motor temperature
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # Joint modes
-        [ (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8) ], # V actual
-        [
-            (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8),
-            (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8),
-            (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8),
-            (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8),
-            (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8),
-            (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8),
-            (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8),
-            (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8),
-            (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (0.0, 8), (12345.0, 8)
-        ], # Reserved bits
-    ]
-
-    __result: bytearray = None
+    def __init__(self) -> None:
+        print(self.contents)
+        self.contents['len'] = len(self.contents.tobytes())
 
     def packet(self):
-        if self.__result is None:
-            self.build()
-
-        return self.__result
-
-    def build(self):
-        self.__result = self.__concat_contents(self.contents)
-
-    def replace_contents(self, begin: int, end: int, value):
-        if self.__result is None:
-            self.build()
-
-        expected_bytes_count = end - begin + 1
-        if isinstance(value, float) and expected_bytes_count != 8 or\
-            isinstance(value, int) and expected_bytes_count != 2:
-                raise ValueError('Invalid replace segment or given value type')
-
-        if isinstance(value, float):
-            bytes_value = bytearray(struct.pack('<d', value))
-        else:
-            bytes_value = bytearray(value.to_bytes(2, 'little'))
-
-        for i in range(0, expected_bytes_count):
-            self.__result[begin + i] = bytes_value[i]
-
-
-    def __concat_contents(self, contents) -> bytearray:
-        ret = bytearray()
-
-        if isinstance(contents, tuple):
-            (value, bytes_count) = contents
-            if isinstance(value, float):
-                return struct.pack('<d', value)
-
-            return value.to_bytes(bytes_count, 'little')
-
-        for item in contents:
-            ret += bytearray(self.__concat_contents(item))
-
-        return ret
+        return self.contents.tobytes()

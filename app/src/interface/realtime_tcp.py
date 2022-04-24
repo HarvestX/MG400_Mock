@@ -35,7 +35,6 @@ class RealtimeTcp(TcpSocket):
 
     def __real_time_feedback(self):
         packet = RealtimePacket()
-        packet.build()
 
         while True:
             count = self.__socket_pool.qsize()
