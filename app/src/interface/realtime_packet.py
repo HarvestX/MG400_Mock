@@ -41,11 +41,10 @@ RealtimePacketType = np.dtype([
 
 
 class RealtimePacket:
-    contents = np.array([0], dtype=RealtimePacketType)
+    __contents = np.array([0], dtype=RealtimePacketType)
 
     def __init__(self) -> None:
-        print(self.contents)
-        self.contents['len'] = len(self.contents.tobytes())
+        self.__contents['len'] = len(self.__contents.tobytes())
 
     def packet(self):
-        return self.contents.tobytes()
+        return self.__contents.tobytes()
