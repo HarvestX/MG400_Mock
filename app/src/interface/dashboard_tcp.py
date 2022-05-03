@@ -1,3 +1,4 @@
+from .function_parser import FunctionParser
 from .tcp_socket import TcpSocket
 import logging
 
@@ -16,5 +17,7 @@ class DashboardTcp(TcpSocket):
             with connection:
                 recv = connection.recv(max_receive_bytes).decode()
                 self.logger.info(recv)
+
+                FunctionParser.exec(recv)
 
                 connection.send((recv + ' returned.').encode())

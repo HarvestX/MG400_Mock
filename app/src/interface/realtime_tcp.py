@@ -1,3 +1,4 @@
+from .function_parser import FunctionParser
 from .tcp_socket import TcpSocket
 from .realtime_packet import RealtimePacket
 from threading import Thread
@@ -30,6 +31,8 @@ class RealtimeTcp(TcpSocket):
 
             recv = connection.recv(max_receive_bytes).decode()
             self.logger.info(recv)
+
+            FunctionParser.exec(recv)
 
             connection.send((recv + ' returned.').encode())
 
