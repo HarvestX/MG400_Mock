@@ -3,7 +3,7 @@ import re as regex
 class FunctionParesr:
 
     @staticmethod
-    def exec(command: str):
+    def exec(command_class, command: str):
         function_name = regex.match(r'\s*[a-zA-Z]+(?=(\s*\(.*\)))', command)
 
         if not function_name:
@@ -15,7 +15,7 @@ class FunctionParesr:
         args = args_str.split(',')
 
         try:
-            function = getattr('functions_class', function_name_str)
+            function = getattr(command_class, function_name_str)
 
             function(args)
         except AttributeError as err:

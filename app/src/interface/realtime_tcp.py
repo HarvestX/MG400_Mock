@@ -33,7 +33,7 @@ class RealtimeTcp(TcpSocket):
             self.logger.info(recv)
 
             try:
-                FunctionParser.exec(recv)
+                FunctionParser.exec(RealtimeCommands(), recv)
             except ValueError as err:
                 self.logger.error(err)
 
