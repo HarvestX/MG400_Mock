@@ -32,7 +32,10 @@ class RealtimeTcp(TcpSocket):
             recv = connection.recv(max_receive_bytes).decode()
             self.logger.info(recv)
 
-            FunctionParser.exec(recv)
+            try:
+                FunctionParser.exec(recv)
+            except ValueError as err:
+                self.logger.error(err)
 
             connection.send((recv + ' returned.').encode())
 
