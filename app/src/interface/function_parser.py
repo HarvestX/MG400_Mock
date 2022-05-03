@@ -1,6 +1,6 @@
 import re as regex
 
-class FunctionParesr:
+class FunctionParser:
 
     @staticmethod
     def exec(command_class, command: str):
