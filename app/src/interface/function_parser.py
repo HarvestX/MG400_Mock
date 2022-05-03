@@ -2,7 +2,8 @@ import re as regex
 
 class FunctionParesr:
 
-    def exec(self, command: str):
+    @staticmethod
+    def exec(command: str):
         function_name = regex.match(r'\s*[a-zA-Z]+(?=(\s*\(.*\)))', command)
 
         if not function_name:
