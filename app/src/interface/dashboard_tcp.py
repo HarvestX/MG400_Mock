@@ -14,13 +14,12 @@ class DashboardTcp(TcpSocket):
     def callback(self, socket, max_receive_bytes):
         while True:
             connection, _ = socket.accept()
-            with connection:
-                recv = connection.recv(max_receive_bytes).decode()
-                self.logger.info(recv)
+            recv = connection.recv(max_receive_bytes).decode()
+            self.logger.info(recv)
 
-                try:
-                    FunctionParser.exec(DashboardCommands(), recv)
-                except ValueError as err:
-                    self.logger.error(err)
+            try:
+                FunctionParser.exec(DashboardCommands(), recv)
+            except ValueError as err:
+                self.logger.error(err)
 
-                connection.send((recv + ' returned.').encode())
+            connection.send((recv + ' returned.').encode())
