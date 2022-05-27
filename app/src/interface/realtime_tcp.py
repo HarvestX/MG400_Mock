@@ -1,3 +1,4 @@
+from .function_parser import FunctionParser
 from .tcp_socket import TcpSocket
 from .realtime_packet import RealtimePacket
 from threading import Thread
@@ -5,6 +6,8 @@ from queue import Queue
 import logging
 import socket
 import time
+
+from dobot_command.realtime_command import RealtimeCommands
 
 
 class RealtimeTcp(TcpSocket):
@@ -30,6 +33,11 @@ class RealtimeTcp(TcpSocket):
 
             recv = connection.recv(max_receive_bytes).decode()
             self.logger.info(recv)
+
+            try:
+                FunctionParser.exec(RealtimeCommands(), recv)
+            except ValueError as err:
+                self.logger.error(err)
 
             connection.send((recv + ' returned.').encode())
 

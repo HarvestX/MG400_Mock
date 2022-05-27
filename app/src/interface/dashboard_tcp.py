@@ -1,5 +1,9 @@
+from .function_parser import FunctionParser
 from .tcp_socket import TcpSocket
 import logging
+
+from dobot_command.dashboard_command import DashboardCommands
+
 
 class DashboardTcp(TcpSocket):
 
@@ -13,8 +17,12 @@ class DashboardTcp(TcpSocket):
     def callback(self, socket, max_receive_bytes):
         while True:
             connection, _ = socket.accept()
-            with connection:
-                recv = connection.recv(max_receive_bytes).decode()
-                self.logger.info(recv)
+            recv = connection.recv(max_receive_bytes).decode()
+            self.logger.info(recv)
 
-                connection.send((recv + ' returned.').encode())
+            try:
+                FunctionParser.exec(DashboardCommands(), recv)
+            except ValueError as err:
+                self.logger.error(err)
+
+            connection.send((recv + ' returned.').encode())
