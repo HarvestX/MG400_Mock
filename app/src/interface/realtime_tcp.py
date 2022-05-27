@@ -7,6 +7,8 @@ import logging
 import socket
 import time
 
+from dobot_command.realtime_command import RealtimeCommands
+
 
 class RealtimeTcp(TcpSocket):
 

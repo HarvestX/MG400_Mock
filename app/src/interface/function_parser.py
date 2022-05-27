@@ -1,5 +1,6 @@
 import re as regex
 
+
 class FunctionParser:
 
     @staticmethod
@@ -11,7 +12,8 @@ class FunctionParser:
 
         function_name_str = function_name.group()
 
-        args_str = command.replace(function_name_str, '').strip().lstrip('(').rstrip(')')
+        args_str = command.replace(
+            function_name_str, '').strip().lstrip('(').rstrip(')')
         args = args_str.split(',')
 
         try:
@@ -19,4 +21,4 @@ class FunctionParser:
 
             function(args)
         except AttributeError as err:
-            raise ValueError('Not found a function: ' + err)
+            raise ValueError('Not found a function: ' + str(err))

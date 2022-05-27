@@ -2,6 +2,9 @@ from .function_parser import FunctionParser
 from .tcp_socket import TcpSocket
 import logging
 
+from dobot_command.dashboard_command import DashboardCommands
+
+
 class DashboardTcp(TcpSocket):
 
     logger: logging.Logger = None
