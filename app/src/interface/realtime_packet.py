@@ -47,14 +47,11 @@ class RealtimePacket:
         self.__contents['len'] = len(self.__contents.tobytes())
 
     def packet(self):
-        self.print()
         return self.__contents.tobytes()
 
     def write(self, key: str, value):
         if not value in self.__contents:
-            raise ValueError('Error has occurred in overwriting packet: ' + '"' + key + '"' + ' not found.')
+            raise ValueError(
+                'Error has occurred in overwriting packet: ' + '"' + key + '"' + ' not found.')
 
         self.__contents[key] = value
-
-    def print(self):
-        print(self.__contents)
