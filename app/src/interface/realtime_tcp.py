@@ -30,16 +30,17 @@ class RealtimeTcp(TcpSocket):
         while True:
             connection, _ = socket.accept()
             self.__socket_pool.put(connection)
+            with connection:
+                while True:
+                    recv = connection.recv(max_receive_bytes).decode()
+                    if not recv:
+                        break
+                    self.logger.info(recv)
 
-            recv = connection.recv(max_receive_bytes).decode()
-            self.logger.info(recv)
-
-            try:
-                FunctionParser.exec(RealtimeCommands(), recv)
-            except ValueError as err:
-                self.logger.error(err)
-
-            connection.send((recv + ' returned.').encode())
+                    try:
+                        FunctionParser.exec(RealtimeCommands(), recv)
+                    except ValueError as err:
+                        self.logger.error(err)
 
     def __real_time_feedback(self):
         packet = RealtimePacket()
