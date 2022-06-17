@@ -18,14 +18,15 @@ class DashboardTcp(TcpSocket):
         while True:
             connection, _ = socket.accept()
             with connection:
-                recv = connection.recv(max_receive_bytes).decode()
-                if not recv:
-                    break
-                self.logger.info(recv)
+                while True:
+                    recv = connection.recv(max_receive_bytes).decode()
+                    if not recv:
+                        break
+                    self.logger.info(recv)
 
-                try:
-                    FunctionParser.exec(DashboardCommands(), recv)
-                except ValueError as err:
-                    self.logger.error(err)
+                    try:
+                        FunctionParser.exec(DashboardCommands(), recv)
+                    except ValueError as err:
+                        self.logger.error(err)
 
-                connection.send((recv + ' returned.').encode())
+                    connection.send((recv + ' returned.').encode())
