@@ -58,7 +58,6 @@ class RealtimePacket:
 
     def __init__(self) -> None:
         self.__contents['len'] = len(self.__contents.tobytes())
-        print(self.__contents)
 
     def packet(self):
         return self.__contents.tobytes()
