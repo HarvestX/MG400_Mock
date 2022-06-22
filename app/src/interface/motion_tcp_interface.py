@@ -1,10 +1,9 @@
 from .function_parser import FunctionParser
 from .tcp_socket import TcpSocket
-from .realtime_packet import RealtimePacket
 from queue import Queue
 import logging
 
-from dobot_command.realtime_command import RealtimeCommands
+from dobot_command.motion_command import MotionCommands
 
 
 class MotionTcpInterface(TcpSocket):
@@ -30,6 +29,6 @@ class MotionTcpInterface(TcpSocket):
                     self.logger.info(recv)
 
                     try:
-                        FunctionParser.exec(RealtimeCommands(), recv)
+                        FunctionParser.exec(MotionCommands(), recv)
                     except ValueError as err:
                         self.logger.error(err)
