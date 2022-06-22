@@ -1,4 +1,5 @@
 from .dashboard_tcp import DashboardTcp
-from .realtime_tcp import RealtimeTcp
+from .motion_tcp_interface import MotionTcpInterface
+from .realtime_feedback_tcp_interface import RealtimeFeedbackTcpInterface
 
-__all__ = [DashboardTcp, RealtimeTcp]
+__all__ = [DashboardTcp, MotionTcpInterface, RealtimeFeedbackTcpInterface]

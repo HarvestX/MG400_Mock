@@ -9,6 +9,7 @@ services:
     ports:
       - "29999:29999"
       - "30003:30003"
+      - "30004:30004"
     networks:
       dobot_network:
         ipv4_address: 172.10.0.2
