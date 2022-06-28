@@ -3,13 +3,12 @@ import socket
 from threading import Thread
 
 
-class TcpSocket(Thread):
+class TcpInterfaceBase(Thread):
 
     MAX_RECEIVE_BYTES = 1024
 
-    __ip: str = None
-    __port: int = None
-    __callback = None
+    __ip: str
+    __port: int
 
     @abstractmethod
     def callback(self, socket, max_receive_bytes):
