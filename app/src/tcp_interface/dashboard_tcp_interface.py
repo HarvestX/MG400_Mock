@@ -1,18 +1,18 @@
 from .function_parser import FunctionParser
-from .tcp_socket import TcpSocket
+from .tcp_interface_base import TcpInterfaceBase
 import logging
 
 from dobot_command.dashboard_command import DashboardCommands
 
 
-class DashboardTcp(TcpSocket):
+class DashboardTcpInterface(TcpInterfaceBase):
 
-    logger: logging.Logger = None
+    logger: logging.Logger
 
     def __init__(self, ip: str, port: int) -> None:
         super().__init__(ip, port, self.callback)
 
-        self.logger = logging.getLogger('DashboardTcp')
+        self.logger = logging.getLogger('Dashboard Tcp Interface')
 
     def callback(self, socket, max_receive_bytes):
         while True:
