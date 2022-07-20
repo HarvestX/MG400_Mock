@@ -1,6 +1,9 @@
 {
   "python.linting.enabled": true,
   "python.linting.flake8Enabled": true,
-  "python.linting.pylintEnabled": true,
-  "python.linting.mypyEnabled": true
+  "python.linting.pylintEnabled": false,
+  "python.linting.mypyEnabled": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true
+  }
 }

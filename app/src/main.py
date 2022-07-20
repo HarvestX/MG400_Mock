@@ -1,6 +1,7 @@
+import logging
+
 import tcp_interface
 
-import logging
 logging.basicConfig(level=logging.INFO)
 
 
