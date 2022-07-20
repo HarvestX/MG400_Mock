@@ -30,5 +30,6 @@ class RealtimeFeedbackTcpInterface(TcpInterfaceBase):
                         connection.send(packet.packet())
                     except SocketError:
                         connection.close()
+                        break
 
                     time.sleep(self.__realtime_feedback_period)
