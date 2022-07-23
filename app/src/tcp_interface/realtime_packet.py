@@ -64,3 +64,6 @@ class RealtimePacket:
 
     def write(self, key: str, value):
         self.__contents[key] = value
+
+    def read(self, key: str):
+            return self.__contents[key]

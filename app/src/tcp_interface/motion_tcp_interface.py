@@ -1,3 +1,5 @@
+"""Motion Tcp Interface."""
+
 from .function_parser import FunctionParser
 from .tcp_interface_base import TcpInterfaceBase
 from queue import Queue
@@ -11,11 +13,12 @@ class MotionTcpInterface(TcpInterfaceBase):
     logger: logging.Logger
     __socket_pool: Queue
 
-    def __init__(self, ip: str, port: int) -> None:
+    def __init__(self, ip: str, port: int, motion_commands: MotionCommands) -> None:
         super().__init__(ip, port, self.callback)
 
-        self.logger = logging.getLogger('Motion Tcp Interface')
+        self.logger = logging.getLogger("Motion Tcp Interface")
         self.__socket_pool = Queue()
+        self.__motion_commands = motion_commands
 
     def callback(self, socket, max_receive_bytes):
         while True:
@@ -29,6 +32,6 @@ class MotionTcpInterface(TcpInterfaceBase):
                     self.logger.info(recv)
 
                     try:
-                        FunctionParser.exec(MotionCommands(), recv)
+                        FunctionParser.exec(self.__motion_commands, recv)
                     except ValueError as err:
                         self.logger.error(err)
