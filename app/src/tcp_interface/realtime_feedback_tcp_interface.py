@@ -32,9 +32,9 @@ class RealtimeFeedbackTcpInterface(TcpInterfaceBase):
                     try:
                         self.__dobot.lock_mutex()
                         self.__dobot.update_status(self.__realtime_feedback_period)
-                        packet: RealtimePacket = self.__dobot.get_status()
+                        packet = self.__dobot.get_status()
                         self.__dobot.release_mutex()
-                        connection.send(packet.packet())
+                        connection.send(packet)
                     except SocketError:
                         connection.close()
 

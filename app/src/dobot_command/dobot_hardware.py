@@ -11,8 +11,8 @@ class DobotHardware:
         self.__pre_status = RealtimePacket()
         self.__lock = threading.Lock()
 
-    def get_status(self) -> RealtimePacket:
-        return self.__status
+    def get_status(self):
+        return self.__status.packet()
 
     def lock_mutex(self):
         self.__lock.acquire()

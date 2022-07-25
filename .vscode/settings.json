@@ -4,6 +4,7 @@
     "python.linting.pylintEnabled": true,
     "python.linting.mypyEnabled": true,
     "[python]": {
-        "editor.formatOnSave": false
+        "editor.formatOnSave": true
     },
+    "editor.defaultFormatter": "ms-python.vscode-pylance"
 }
