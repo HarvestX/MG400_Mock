@@ -88,7 +88,7 @@ class DobotHardware:
     def set_q_target(self, q_target: np.ndarray):
         """set_q_target"""
         print(q_target)
-        self.__q_target = q_target.copy()
+        # self.__q_target = q_target.copy()
 
     def set_qd_target(self, qd_target: np.ndarray):
         """set_qd_target"""
