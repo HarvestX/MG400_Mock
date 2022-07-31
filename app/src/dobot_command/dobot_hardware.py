@@ -118,6 +118,8 @@ class DobotHardware:
             self.__q_controller()
             self.__update_qd(timestep)
             self.__q_previous = self.__q_actual
+            self.__pack_status()
+            return self.__status.packet()
 
     def clear_error(self):
         """clear_error"""

@@ -29,9 +29,8 @@ class RealtimeFeedbackTcpInterface(TcpInterfaceBase):
             with connection:
                 while True:
                     try:
-                        self.__dobot.update_status(
+                        packet = self.__dobot.update_status(
                             self.__realtime_feedback_period)
-                        packet = self.__dobot.get_status()
                         connection.send(packet)
                     except SocketError:
                         connection.close()
