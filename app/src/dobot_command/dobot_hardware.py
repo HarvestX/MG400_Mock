@@ -1,7 +1,9 @@
 """Dobot Hardware."""
 
 import threading
+from typing import List
 import numpy as np
+
 from tcp_interface.realtime_packet import RealtimePacket
 
 
@@ -14,27 +16,27 @@ class DobotHardware:
         self.__robot_mode = 0
         self.__test_value = 0
         self.__speed_scaling = 1
-        self.__q_target: np.ndarray = np.array([0] * 6, np.float64)
-        self.__qd_target: np.ndarray = np.array([0] * 6, np.float64)
-        self.__qdd_target: np.ndarray = np.array([0] * 6, np.float64)
-        self.__i_target: np.ndarray = np.array([0] * 6, np.float64)
-        self.__m_target: np.ndarray = np.array([0] * 6, np.float64)
-        self.__q_actual: np.ndarray = np.array([0] * 6, np.float64)
-        self.__qd_actual: np.ndarray = np.array([0] * 6, np.float64)
-        self.__i_actual: np.ndarray = np.array([0] * 6, np.float64)
-        self.__actual_i_TCP_force: np.ndarray = np.array([0] * 6, np.float64)
-        self.__tool_vector_actual: np.ndarray = np.array([0] * 6, np.float64)
-        self.__TCP_speed_actual: np.ndarray = np.array([0] * 6, np.float64)
-        self.__TCP_force: np.ndarray = np.array([0] * 6, np.float64)
-        self.__tool_vector_target: np.ndarray = np.array([0] * 6, np.float64)
-        self.__TCP_speed_target: np.ndarray = np.array([0] * 6, np.float64)
+        self.__q_target: np.ndarray = np.array([0] * 6)
+        self.__qd_target: np.ndarray = np.array([0] * 6)
+        self.__qdd_target: np.ndarray = np.array([0] * 6)
+        self.__i_target: np.ndarray = np.array([0] * 6)
+        self.__m_target: np.ndarray = np.array([0] * 6)
+        self.__q_actual: np.ndarray = np.array([0] * 6)
+        self.__qd_actual: np.ndarray = np.array([0] * 6)
+        self.__i_actual: np.ndarray = np.array([0] * 6)
+        self.__actual_i_TCP_force: np.ndarray = np.array([0] * 6)
+        self.__tool_vector_actual: np.ndarray = np.array([0] * 6)
+        self.__TCP_speed_actual: np.ndarray = np.array([0] * 6)
+        self.__TCP_force: np.ndarray = np.array([0] * 6)
+        self.__tool_vector_target: np.ndarray = np.array([0] * 6)
+        self.__TCP_speed_target: np.ndarray = np.array([0] * 6)
         self.__load = 0
         self.__center_x = 0
         self.__center_y = 0
         self.__center_z = 0
 
         self.__error_id = 0
-        self.__q_previous = np.array([0] * 6, np.float64)
+        self.__q_previous = np.array([0] * 6)
         self.__status = RealtimePacket()
         self.__lock = threading.Lock()
 
@@ -62,6 +64,7 @@ class DobotHardware:
         self.__status.write("center_x", self.__center_x)
         self.__status.write("center_y", self.__center_y)
         self.__status.write("center_z", self.__center_z)
+        print(self.__status.read("q_actual"))
 
     def lock_mutex(self):
         """lock_mutex"""
@@ -85,29 +88,28 @@ class DobotHardware:
         self.__pack_status()
         return self.__status.packet()
 
-    def set_q_target(self, q_target: np.ndarray):
+    def set_q_target(self, q_target: List[float]):
         """set_q_target"""
-        print(q_target)
-        # self.__q_target = q_target.copy()
+        self.__q_target = np.array(q_target)
 
-    def set_qd_target(self, qd_target: np.ndarray):
+    def set_qd_target(self, qd_target: List[float]):
         """set_qd_target"""
-        self.__qd_target = qd_target.copy()
+        self.__qd_target = np.array(qd_target)
 
-    def set_qdd_target(self, qdd_target: np.ndarray):
+    def set_qdd_target(self, qdd_target: List[float]):
         """set_qdd_target"""
-        self.__qdd_target = qdd_target.copy()
+        self.__qdd_target = np.array(qdd_target)
 
-    def set_tool_vector_target(self, tool_vector_target: np.ndarray):
+    def set_tool_vector_target(self, tool_vector_target: List[float]):
         """set_tool_vector_target"""
-        self.__tool_vector_target = tool_vector_target.copy()
+        self.__tool_vector_target = np.array(tool_vector_target)
 
-    def set_TCP_speed_target(self, TCP_speed_target: np.ndarray):
+    def set_TCP_speed_target(self, TCP_speed_target: List[float]):
         """set_TCP_speed_target"""
-        self.__TCP_speed_target = TCP_speed_target.copy()
+        self.__TCP_speed_target = np.array(TCP_speed_target)
 
     def __q_controller(self):
-        self.__q_actual = self.__q_target.copy()
+        self.__q_actual = self.__q_target
 
     def __update_qd(self, timestep: float):
         self.__qd_actual = (self.__q_actual - self.__q_previous) / timestep
@@ -116,7 +118,7 @@ class DobotHardware:
         """update_status"""
         self.__q_controller()
         self.__update_qd(timestep)
-        self.__q_previous = self.__q_actual.copy()
+        self.__q_previous = self.__q_actual
 
     def clear_error(self):
         """clear_error"""

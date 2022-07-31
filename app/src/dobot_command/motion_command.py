@@ -1,5 +1,6 @@
 """Dobot Motion Commands."""
 from typing import List
+
 from dobot_command.dobot_hardware import DobotHardware
 
 
