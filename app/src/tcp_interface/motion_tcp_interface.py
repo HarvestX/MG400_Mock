@@ -1,15 +1,15 @@
 """Motion Tcp Interface."""
 
-from .function_parser import FunctionParser
-from .tcp_interface_base import TcpInterfaceBase
 from queue import Queue
 import logging
 
 from dobot_command.motion_command import MotionCommands
+from .function_parser import FunctionParser
+from .tcp_interface_base import TcpInterfaceBase
 
 
 class MotionTcpInterface(TcpInterfaceBase):
-
+    """MotionTcpInterface"""
     logger: logging.Logger
     __socket_pool: Queue
 

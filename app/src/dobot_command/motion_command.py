@@ -4,10 +4,13 @@ from dobot_command.dobot_hardware import DobotHardware
 
 
 class MotionCommands:
+    """MotionCommands"""
+
     def __init__(self, dobot: DobotHardware) -> None:
         self.__dobot = dobot
 
     def MoveJog(self, axis_id: str):
+        """MoveJog"""
         # TODO: update the following algorithm
         # temporary implementation:
         # The following algorithm differs from that of the actual Dobot.
@@ -38,5 +41,5 @@ class MotionCommands:
             angles[5] = -90
         elif axis_id == "j6-":
             angles[5] = -90
-        self.__dobot.set_status("q_actual", angles)
+        self.__dobot.set_q_target(angles)
         self.__dobot.release_mutex()

@@ -3,8 +3,15 @@
     "python.linting.flake8Enabled": true,
     "python.linting.pylintEnabled": true,
     "python.linting.mypyEnabled": true,
+    "python.formatting.provider": "autopep8",
     "[python]": {
         "editor.formatOnSave": true
     },
-    "editor.defaultFormatter": "ms-python.vscode-pylance"
+    "cSpell.words": [
+        "ndarray",
+        "timestep"
+    ],
+    "python.linting.pylintArgs": [
+        "--rcfile=${workspaceFolder}/.vscode/.pylintrc"
+    ]
 }

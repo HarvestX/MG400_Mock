@@ -8,7 +8,7 @@ from .tcp_interface_base import TcpInterfaceBase
 
 
 class DashboardTcpInterface(TcpInterfaceBase):
-
+    """DashboardTcpInterface"""
     logger: logging.Logger
 
     def __init__(

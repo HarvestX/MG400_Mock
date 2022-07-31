@@ -1,17 +1,16 @@
 """Realtime Feedback Tcp Interface."""
 
-from .tcp_interface_base import TcpInterfaceBase
-from .realtime_packet import RealtimePacket
 from queue import Queue
 import logging
 from socket import error as SocketError
 import time
 
 from dobot_command.dobot_hardware import DobotHardware
+from .tcp_interface_base import TcpInterfaceBase
 
 
 class RealtimeFeedbackTcpInterface(TcpInterfaceBase):
-
+    """RealtimeFeedbackTcpInterface"""
     logger: logging.Logger
     __realtime_feedback_period: float = 8.0 / 1000
     __socket_pool: Queue
@@ -31,7 +30,8 @@ class RealtimeFeedbackTcpInterface(TcpInterfaceBase):
                 while True:
                     try:
                         self.__dobot.lock_mutex()
-                        self.__dobot.update_status(self.__realtime_feedback_period)
+                        self.__dobot.update_status(
+                            self.__realtime_feedback_period)
                         packet = self.__dobot.get_status()
                         self.__dobot.release_mutex()
                         connection.send(packet)

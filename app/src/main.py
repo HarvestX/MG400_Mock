@@ -1,14 +1,16 @@
-import tcp_interface
+"""MG400 Mock Initial File."""
+import logging
 
+import tcp_interface
 from dobot_command.dashboard_command import DashboardCommands
 from dobot_command.motion_command import MotionCommands
 from dobot_command.dobot_hardware import DobotHardware
-import logging
 
 logging.basicConfig(level=logging.INFO)
 
 
 def main():
+    """MG400 Mock Initial Point"""
     dobot = DobotHardware()
     dashboard_commands = DashboardCommands(dobot)
     motion_commands = MotionCommands(dobot)

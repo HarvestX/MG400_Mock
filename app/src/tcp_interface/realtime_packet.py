@@ -1,3 +1,5 @@
+"""RealtimePacket."""
+
 import numpy as np
 
 RealtimePacketType = np.dtype([
@@ -54,16 +56,20 @@ RealtimePacketType = np.dtype([
 
 
 class RealtimePacket:
+    """RealtimePacket"""
     __contents = np.array([0], dtype=RealtimePacketType)
 
     def __init__(self) -> None:
         self.__contents['len'] = len(self.__contents.tobytes())
 
     def packet(self):
+        """return the dobot status as a packet."""
         return self.__contents.tobytes()
 
     def write(self, key: str, value):
+        """write the status to a packet."""
         self.__contents[key] = value
 
     def read(self, key: str):
-            return self.__contents[key]
+        """read the status from the packet."""
+        return self.__contents[key]
