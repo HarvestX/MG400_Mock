@@ -14,7 +14,7 @@ class TcpInterfaceBase(Thread):
 
     @abstractmethod
     def callback(self, socket, max_receive_bytes):
-        pass
+        """callback"""
 
     def __init__(self, ip: str, port: int, callback) -> None:
         super().__init__()

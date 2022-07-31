@@ -11,6 +11,4 @@ class DashboardCommands:
 
     def ClearError(self):
         """ClearError"""
-        self.__dobot.lock_mutex()
         self.__dobot.clear_error()
-        self.__dobot.release_mutex()

@@ -1,4 +1,5 @@
 """Dobot Motion Commands."""
+
 from typing import List
 
 from dobot_command.dobot_hardware import DobotHardware
@@ -15,7 +16,6 @@ class MotionCommands:
         # TODO: update the following algorithm
         # temporary implementation:
         # The following algorithm differs from that of the actual Dobot.
-        self.__dobot.lock_mutex()
         axis_id = axis_id[0]
         angles: List[float] = [0.0] * 6
         if axis_id == "j1+":
@@ -43,4 +43,3 @@ class MotionCommands:
         elif axis_id == "j6-":
             angles[5] = -90
         self.__dobot.set_q_target(angles)
-        self.__dobot.release_mutex()

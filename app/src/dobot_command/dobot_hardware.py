@@ -64,15 +64,6 @@ class DobotHardware:
         self.__status.write("center_x", self.__center_x)
         self.__status.write("center_y", self.__center_y)
         self.__status.write("center_z", self.__center_z)
-        print(self.__status.read("q_actual"))
-
-    def lock_mutex(self):
-        """lock_mutex"""
-        self.__lock.acquire()
-
-    def release_mutex(self):
-        """release_mutex"""
-        self.__lock.release()
 
     def get_error_id(self) -> np.int64:
         """get_error_id
@@ -81,32 +72,39 @@ class DobotHardware:
             np.int64: 0 indicates that there are no errors.
                 Other numbers indicate that the dobot has some errors.
         """
-        return self.__error_id
+        with self.__lock:
+            return self.__error_id
 
     def get_status(self):
         """get_status"""
-        self.__pack_status()
-        return self.__status.packet()
+        with self.__lock:
+            self.__pack_status()
+            return self.__status.packet()
 
     def set_q_target(self, q_target: List[float]):
         """set_q_target"""
-        self.__q_target = np.array(q_target)
+        with self.__lock:
+            self.__q_target = np.array(q_target)
 
     def set_qd_target(self, qd_target: List[float]):
         """set_qd_target"""
-        self.__qd_target = np.array(qd_target)
+        with self.__lock:
+            self.__qd_target = np.array(qd_target)
 
     def set_qdd_target(self, qdd_target: List[float]):
         """set_qdd_target"""
-        self.__qdd_target = np.array(qdd_target)
+        with self.__lock:
+            self.__qdd_target = np.array(qdd_target)
 
     def set_tool_vector_target(self, tool_vector_target: List[float]):
         """set_tool_vector_target"""
-        self.__tool_vector_target = np.array(tool_vector_target)
+        with self.__lock:
+            self.__tool_vector_target = np.array(tool_vector_target)
 
     def set_TCP_speed_target(self, TCP_speed_target: List[float]):
         """set_TCP_speed_target"""
-        self.__TCP_speed_target = np.array(TCP_speed_target)
+        with self.__lock:
+            self.__TCP_speed_target = np.array(TCP_speed_target)
 
     def __q_controller(self):
         self.__q_actual = self.__q_target
@@ -116,10 +114,12 @@ class DobotHardware:
 
     def update_status(self, timestep: float):
         """update_status"""
-        self.__q_controller()
-        self.__update_qd(timestep)
-        self.__q_previous = self.__q_actual
+        with self.__lock:
+            self.__q_controller()
+            self.__update_qd(timestep)
+            self.__q_previous = self.__q_actual
 
     def clear_error(self):
         """clear_error"""
-        self.__error_id = 0
+        with self.__lock:
+            self.__error_id = 0

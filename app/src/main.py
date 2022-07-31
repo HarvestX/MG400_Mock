@@ -1,4 +1,5 @@
 """MG400 Mock Initial File."""
+
 import logging
 
 import tcp_interface
