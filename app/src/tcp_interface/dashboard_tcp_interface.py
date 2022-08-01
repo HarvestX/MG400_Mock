@@ -2,6 +2,7 @@
 
 import logging
 
+from dobot_command.dobot_hardware import DobotHardware
 from dobot_command.dashboard_command import DashboardCommands
 from .function_parser import FunctionParser
 from .tcp_interface_base import TcpInterfaceBase
@@ -12,10 +13,10 @@ class DashboardTcpInterface(TcpInterfaceBase):
     logger: logging.Logger
 
     def __init__(
-        self, ip: str, port: int, dashboard_commands: DashboardCommands
+        self, ip: str, port: int, dobot: DobotHardware
     ) -> None:
         super().__init__(ip, port, self.callback)
-        self.__dashboard_commands = dashboard_commands
+        self.__dashboard_commands = DashboardCommands(dobot)
         self.logger = logging.getLogger("Dashboard Tcp Interface")
 
     def callback(self, socket, max_receive_bytes):
