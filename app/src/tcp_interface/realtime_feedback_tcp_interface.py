@@ -1,9 +1,10 @@
-from .tcp_interface_base import TcpInterfaceBase
-from .realtime_packet import RealtimePacket
-from queue import Queue
 import logging
-from socket import error as SocketError
 import time
+from queue import Queue
+from socket import error as SocketError
+
+from .realtime_packet import RealtimePacket
+from .tcp_interface_base import TcpInterfaceBase
 
 
 class RealtimeFeedbackTcpInterface(TcpInterfaceBase):
