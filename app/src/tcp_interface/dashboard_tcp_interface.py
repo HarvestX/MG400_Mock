@@ -7,6 +7,9 @@ from dobot_command.dashboard_command import DashboardCommands
 from .function_parser import FunctionParser
 from .tcp_interface_base import TcpInterfaceBase
 
+from .function_parser import FunctionParser
+from .tcp_interface_base import TcpInterfaceBase
+
 
 class DashboardTcpInterface(TcpInterfaceBase):
     """DashboardTcpInterface"""

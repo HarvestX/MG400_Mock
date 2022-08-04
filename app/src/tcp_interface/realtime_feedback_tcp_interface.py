@@ -1,9 +1,14 @@
 """Realtime Feedback Tcp Interface."""
 
 from queue import Queue
+
 import logging
-from socket import error as SocketError
 import time
+from queue import Queue
+from socket import error as SocketError
+
+from .realtime_packet import RealtimePacket
+from .tcp_interface_base import TcpInterfaceBase
 
 from dobot_command.dobot_hardware import DobotHardware
 from .tcp_interface_base import TcpInterfaceBase
@@ -34,5 +39,6 @@ class RealtimeFeedbackTcpInterface(TcpInterfaceBase):
                         connection.send(packet)
                     except SocketError:
                         connection.close()
+                        break
 
                     time.sleep(self.__realtime_feedback_period)
