@@ -4,14 +4,11 @@ from queue import Queue
 
 import logging
 import time
-from queue import Queue
 from socket import error as SocketError
 
-from .realtime_packet import RealtimePacket
 from .tcp_interface_base import TcpInterfaceBase
 
 from dobot_command.dobot_hardware import DobotHardware
-from .tcp_interface_base import TcpInterfaceBase
 
 
 class RealtimeFeedbackTcpInterface(TcpInterfaceBase):

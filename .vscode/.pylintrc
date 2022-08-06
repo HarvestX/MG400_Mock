@@ -8,5 +8,6 @@ good-names=
     TCP_speed_target,
     set_TCP_speed_target,
     ClearError,
-    MoveJog,
-    s
+    MoveJog
+
+init-hook="./app/src"

@@ -24,7 +24,7 @@ class TcpInterfaceBase(Thread):
         self.__callback = callback
 
     def run(self):
-        with so.socket(so.AF_INET, so.SOCK_STREAM) as s:
-            s.bind((self.__ip, self.__port))
-            s.listen(10)
-            self.__callback(s, self.MAX_RECEIVE_BYTES)
+        with so.socket(so.AF_INET, so.SOCK_STREAM) as skt:
+            skt.bind((self.__ip, self.__port))
+            skt.listen(10)
+            self.__callback(skt, self.MAX_RECEIVE_BYTES)
