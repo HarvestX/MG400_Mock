@@ -2,8 +2,8 @@
 
 import threading
 from typing import List
-import numpy as np
 
+import numpy as np
 from tcp_interface.realtime_packet import RealtimePacket
 
 

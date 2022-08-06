@@ -1,8 +1,7 @@
 """Tcp Interface Base."""
 
-from abc import abstractmethod
 import socket as so
-
+from abc import abstractmethod
 from threading import Thread
 
 

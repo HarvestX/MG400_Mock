@@ -1,10 +1,11 @@
 """Motion Tcp Interface."""
 
-from queue import Queue
 import logging
+from queue import Queue
 
 from dobot_command.dobot_hardware import DobotHardware
 from dobot_command.motion_command import MotionCommands
+
 from .function_parser import FunctionParser
 from .tcp_interface_base import TcpInterfaceBase
 
