@@ -11,6 +11,9 @@ class MotionCommands:
     def __init__(self, dobot: DobotHardware) -> None:
         self.__dobot = dobot
 
+    def MovJ(self, X, Y, Z, Rx, Ry, Rz, **kwargs):
+        """MovJ"""
+
     def MoveJog(self, axis_id: str):
         """MoveJog"""
         # TODO: update the following algorithm

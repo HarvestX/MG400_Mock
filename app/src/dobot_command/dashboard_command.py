@@ -9,6 +9,15 @@ class DashboardCommands:
     def __init__(self, dobot: DobotHardware) -> None:
         self.__dobot = dobot
 
+    def EnableRobot(self):
+        """EnableRobot"""
+
+    def DisableRobot(self):
+        """DisableRobot"""
+
     def ClearError(self):
         """ClearError"""
         self.__dobot.clear_error()
+
+    def GetErrorID(self):
+        """GetErrorID"""
