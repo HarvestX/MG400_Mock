@@ -1,0 +1,13 @@
+[BASIC]
+
+good-names=
+    __actual_i_TCP_force,
+    __TCP_speed_actual,
+    __TCP_force,
+    __TCP_speed_target,
+    TCP_speed_target,
+    set_TCP_speed_target,
+    ClearError,
+    MoveJog
+
+init-hook="./app/src"

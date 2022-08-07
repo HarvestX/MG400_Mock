@@ -1,10 +1,12 @@
-import socket
+"""Tcp Interface Base."""
+
+import socket as so
 from abc import abstractmethod
 from threading import Thread
 
 
 class TcpInterfaceBase(Thread):
-
+    """TcpInterfaceBase"""
     MAX_RECEIVE_BYTES = 1024
 
     __ip: str
@@ -12,7 +14,7 @@ class TcpInterfaceBase(Thread):
 
     @abstractmethod
     def callback(self, socket, max_receive_bytes):
-        pass
+        """callback"""
 
     def __init__(self, ip: str, port: int, callback) -> None:
         super().__init__()
@@ -21,7 +23,7 @@ class TcpInterfaceBase(Thread):
         self.__callback = callback
 
     def run(self):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind((self.__ip, self.__port))
-            s.listen(10)
-            self.__callback(s, self.MAX_RECEIVE_BYTES)
+        with so.socket(so.AF_INET, so.SOCK_STREAM) as skt:
+            skt.bind((self.__ip, self.__port))
+            skt.listen(10)
+            self.__callback(skt, self.MAX_RECEIVE_BYTES)
