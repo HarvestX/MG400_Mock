@@ -25,9 +25,11 @@ class FunctionParser:
             function = getattr(command_class, function_name_str)
 
             if args != [""]:
-                function(args)
+                res = function(args)
             else:
-                function()
+                res = function()
+
+            return res
 
         except AttributeError as err:
             raise ValueError("Not found a function: " + str(err)) from err
