@@ -81,6 +81,11 @@ class DobotHardware:
             self.__pack_status()
             return self.__status.packet()
 
+    def set_robot_mode(self, mode: int):
+        """set_robot_mode"""
+        with self.__lock:
+            self.__robot_mode = mode
+
     def set_q_target(self, q_target: List[float]):
         """set_q_target"""
         with self.__lock:
@@ -125,3 +130,19 @@ class DobotHardware:
         """clear_error"""
         with self.__lock:
             self.__error_id = 0
+
+
+class RobotMode:
+    """DobotHardware"""
+
+    def __init__(self):
+        self.mode_init = 1
+        self.mode_brake_open = 2
+        self.mode_disabled = 4
+        self.mode_enable = 5
+        self.mode_backdrive = 6
+        self.mode_running = 7
+        self.mode_recording = 8
+        self.mode_error = 9
+        self.mode_pause = 10
+        self.mode_jog = 11
