@@ -35,10 +35,6 @@ class DashboardTcpInterface(TcpInterfaceBase):
                     except ValueError as err:
                         self.logger.error(err)
 
-                    if res == self.__dashboard_commands.none:
-                        return_str = recv
-                    else:
-                        return_str = res+","+recv
-
-                    print("return: " + return_str)
+                    return_str = res+recv+";"
+                    print("RETURN: " + return_str)
                     connection.send((return_str).encode())
