@@ -10,7 +10,7 @@ class DashboardCommands:
     def __init__(self, dobot: DobotHardware) -> None:
         self.__dobot = dobot
 
-    def EnableRobot(self, **kwargs) -> str:
+    def EnableRobot(self, *args) -> str:
         """EnableRobot"""
         error_id = self.__dobot.get_error_id()
         if error_id == 0:
