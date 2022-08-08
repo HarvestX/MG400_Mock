@@ -15,13 +15,12 @@ class DashboardCommands:
         error_id = self.__dobot.get_error_id()
         if error_id == 0:
             self.__dobot.set_robot_mode(RobotMode().mode_init)
-            return generate_return_msg(error_id, [error_id])
-        else:
-            return generate_return_msg(error_id, [error_id])
+        return generate_return_msg(error_id)
 
     def DisableRobot(self) -> str:
         """DisableRobot"""
         error_id = self.__dobot.get_error_id()
+        self.__dobot.set_robot_mode(RobotMode().mode_disabled)
         return generate_return_msg(error_id)
 
     def ClearError(self) -> str:
@@ -32,5 +31,13 @@ class DashboardCommands:
 
     def GetErrorID(self) -> str:
         """GetErrorID"""
+        collision = self.__dobot.get_collision_status()
+        collision_msg = "["
+        for val in collision:
+            if val is None:
+                collision_msg += "[],"
+            else:
+                collision_msg += "[" + str(val) + "],"
+        collision_msg = collision_msg[:-1] + "]"
         error_id = self.__dobot.get_error_id()
-        return generate_return_msg(error_id)
+        return generate_return_msg(error_id, [collision_msg])

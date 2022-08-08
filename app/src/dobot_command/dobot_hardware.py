@@ -75,6 +75,12 @@ class DobotHardware:
         with self.__lock:
             return self.__error_id
 
+    def get_collision_status(self):
+        """get_collision_status"""
+        # TODO:implementing an algorithm for detecting collisions
+        with self.__lock:
+            return [None] * 6
+
     def get_status(self):
         """get_status"""
         with self.__lock:
