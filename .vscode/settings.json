@@ -2,7 +2,7 @@
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,
     "python.linting.pylintEnabled": true,
-    "python.linting.mypyEnabled": false,
+    "python.linting.mypyEnabled": true,
     "python.formatting.provider": "autopep8",
     "[python]": {
         "editor.formatOnSave": true
@@ -12,6 +12,7 @@
         "imshow",
         "linewidth",
         "matplotlib",
+        "mtrx",
         "ndarray",
         "pyplot",
         "timestep",
@@ -19,7 +20,8 @@
         "xdata",
         "xlim",
         "ydata",
-        "ylim"
+        "ylim",
+        "zorder"
     ],
     "python.linting.pylintArgs": [
         "--rcfile=${workspaceFolder}/.vscode/.pylintrc"
