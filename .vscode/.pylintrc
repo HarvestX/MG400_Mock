@@ -19,3 +19,6 @@ good-names=
     GetErrorID,
     X, Y, Z,
     Rx, Ry, Rz
+
+[FORMAT]
+max-line-length=80

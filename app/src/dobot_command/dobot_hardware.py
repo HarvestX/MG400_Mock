@@ -114,17 +114,19 @@ class DobotHardware:
         val1 = (p_x**2+p_z**2-length2**2-length3**2) / (2*length2*length3)
         if val1 < -1 or val1 > 1:
             return False, 0, 0, 0, 0
-
         j3_1_ik = math.asin(val1)
+
         j2_ik = math.atan2(p_z, p_x) -\
             math.atan2(length2+length3 * math.sin(j3_1_ik),
                        length3*math.cos(j3_1_ik))
+
         j2_ik = -np.rad2deg(j2_ik)
         j3_1_ik = -np.rad2deg(j3_1_ik)
         j3_ik = j2_ik + j3_1_ik
 
         if not(in_check(J2_MIN, j2_ik, J2_MAX) and
-               in_check(J3_1_MIN, j3_1_ik, J3_1_MAX) and in_check(J3_MIN, j3_ik, J3_MAX)):
+               in_check(J3_1_MIN, j3_1_ik, J3_1_MAX) and
+               in_check(J3_MIN, j3_ik, J3_MAX)):
             return False, 0, 0, 0, 0
 
         j4_ik = Rz - j1_ik
