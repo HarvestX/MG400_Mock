@@ -18,6 +18,7 @@
         "pyplot",
         "timestep",
         "valinit",
+        "velo",
         "xdata",
         "xlim",
         "ydata",

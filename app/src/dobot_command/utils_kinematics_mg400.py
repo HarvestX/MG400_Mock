@@ -11,26 +11,22 @@ J3_1_MIN = -60
 J3_1_MAX = 60
 
 
-def rotation_o(vec, angle):
-    """rotation_o"""
+def rot_y(vec, angle):
+    """rot_y"""
     angle = np.deg2rad(angle)
-    rot_mtrx = np.array([[np.cos(angle), -np.sin(angle)],
-                         [np.sin(angle), np.cos(angle)]])
+    rot_mtrx = np.array([[np.cos(angle), 0, np.sin(angle)],
+                         [0, 1, 0],
+                         [-np.sin(angle), 0, np.cos(angle)]])
     return np.dot(rot_mtrx, vec)
 
 
-def cal_link_pos(j2_fk, j3_fk):
-    """cal_link_pos"""
-    link1_base = np.array([284 - (175 + 66), 0])
-    link2_base = np.array([0, 175])
-    link3_base = np.array([175, 0])
-    link4_base = np.array([66, -57])
-
-    link2_base = link1_base + rotation_o(link2_base, -j2_fk)
-    link3_base = link2_base + rotation_o(link3_base, -j3_fk)
-    link4_base = link3_base + link4_base
-
-    return link1_base, link2_base, link3_base, link4_base
+def rot_z(vec, angle):
+    """rot_z"""
+    angle = np.deg2rad(angle)
+    rot_mtrx = np.array([[np.cos(angle), -np.sin(angle), 0],
+                         [np.sin(angle), np.cos(angle), 0],
+                         [0, 0, 1]])
+    return np.dot(rot_mtrx, vec)
 
 
 def in_check(min_val, x_val, max_val):

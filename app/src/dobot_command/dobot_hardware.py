@@ -1,5 +1,6 @@
 """Dobot Hardware."""
 
+import copy
 import math
 import threading
 from typing import List
@@ -7,7 +8,8 @@ from typing import List
 import numpy as np
 from dobot_command.utils_kinematics_mg400 import (J1_MAX, J1_MIN, J2_MAX,
                                                   J2_MIN, J3_1_MAX, J3_1_MIN,
-                                                  J3_MAX, J3_MIN, in_check)
+                                                  J3_MAX, J3_MIN, in_check,
+                                                  rot_y, rot_z)
 from numpy import linalg as LA
 from tcp_interface.realtime_packet import RealtimePacket
 
@@ -45,10 +47,12 @@ class DobotHardware:
         self.__status = RealtimePacket()
         self.__lock = threading.Lock()
 
-        self.__link1 = np.array([43, 0])
-        self.__link2 = np.array([0, 175])
-        self.__link3 = np.array([175, 0])
-        self.__link4 = np.array([66, -57])
+        self.__controller_mode = ControllerMode().joint_based
+
+        self.__link1 = np.array([43, 0, 0])
+        self.__link2 = np.array([0, 0, 175])
+        self.__link3 = np.array([175, 0, 0])
+        self.__link4 = np.array([66, 0, -57])
 
     def __pack_status(self):
         self.__status.write("digital_inputs", self.__digital_inputs)
@@ -83,13 +87,17 @@ class DobotHardware:
                 Other numbers indicate that the dobot has some errors.
         """
         with self.__lock:
-            return self.__error_id
+            return copy.deepcopy(self.__error_id)
 
-    def get_collision_status(self):
-        """get_collision_status"""
-        # TODO:implementing an algorithm for detecting collisions
+    def get_q_actual(self):
+        """set_q_actual"""
         with self.__lock:
-            return [None] * 6
+            return copy.deepcopy(self.__q_actual)
+
+    def get_tool_vector_actual(self):
+        """set_tool_vector_actual"""
+        with self.__lock:
+            return copy.deepcopy(self.__tool_vector_actual)
 
     def get_status(self):
         """get_status"""
@@ -97,26 +105,38 @@ class DobotHardware:
             self.__pack_status()
             return self.__status.packet()
 
+    def forward_kinematics(self, j_1, j_2, j_3, j_4, j_5, j_6):
+        """forward_kinematics"""
+
+        _, _ = j_5, j_6
+        pos = self.__link1 + \
+            rot_y(self.__link2, j_2) + \
+            rot_y(self.__link3, j_3) + self.__link4
+
+        p_x, p_y, p_z = rot_z(pos, j_1)
+        Rz = j_1 + j_4
+        return np.array([p_x, p_y, p_z, 0, 0, Rz])
+
     def inverse_kinematics(self, p_x, p_y, p_z, Rx, Ry, Rz):
         """inverse_kinematics"""
         _, _ = Rx, Ry  # for pylint waring
 
-        p_x = p_x - self.__link4[0] - self.__link1[0]
-        p_z = p_z - self.__link4[1] - self.__link1[1]
+        pp_x = math.sqrt(p_x**2+p_y**2) - self.__link4[0] - self.__link1[0]
+        pp_z = p_z - self.__link4[2] - self.__link1[2]
         length2 = LA.norm(self.__link2)
         length3 = LA.norm(self.__link3)
 
         j1_ik = math.atan2(p_y, p_x)
         j1_ik = np.rad2deg(j1_ik)
         if not in_check(J1_MIN, j1_ik, J1_MAX):
-            return False, 0, 0, 0, 0
+            return False, np.array([0.]*6)
 
-        val1 = (p_x**2+p_z**2-length2**2-length3**2) / (2*length2*length3)
+        val1 = (pp_x**2+pp_z**2-length2**2-length3**2) / (2*length2*length3)
         if val1 < -1 or val1 > 1:
-            return False, 0, 0, 0, 0
+            return False, np.array([0.]*6)
         j3_1_ik = math.asin(val1)
 
-        j2_ik = math.atan2(p_z, p_x) -\
+        j2_ik = math.atan2(pp_z, pp_x) -\
             math.atan2(length2+length3 * math.sin(j3_1_ik),
                        length3*math.cos(j3_1_ik))
 
@@ -127,10 +147,15 @@ class DobotHardware:
         if not(in_check(J2_MIN, j2_ik, J2_MAX) and
                in_check(J3_1_MIN, j3_1_ik, J3_1_MAX) and
                in_check(J3_MIN, j3_ik, J3_MAX)):
-            return False, 0, 0, 0, 0
+            return False, np.array([0.]*6)
 
-        j4_ik = Rz - j1_ik
-        return True, j1_ik, j2_ik, j3_ik, j4_ik
+        j4_ik = np.rad2deg(Rz) - j1_ik
+        return True, np.array([j1_ik, j2_ik, j3_ik, j4_ik, 0., 0.])
+
+    def set_controller_mode(self, mode: int):
+        """set_controller_mode"""
+        with self.__lock:
+            self.__controller_mode = mode
 
     def set_robot_mode(self, mode: int):
         """set_robot_mode"""
@@ -162,8 +187,31 @@ class DobotHardware:
         with self.__lock:
             self.__TCP_speed_target = np.array(TCP_speed_target)
 
-    def __q_controller(self):
-        self.__q_actual = self.__q_target
+    def __q_controller(self, timestep):
+        if self.__robot_mode == RobotMode().mode_running:
+            if self.__controller_mode == ControllerMode().joint_based:
+                working = np.abs(self.__q_target -
+                                 self.__q_actual) < 2*self.__qd_target*timestep
+                if np.all(working):
+                    self.__robot_mode = RobotMode().mode_enable
+                else:
+                    self.__q_actual = timestep * self.__qd_target * \
+                        np.sign(self.__q_target-self.__q_actual) + \
+                        self.__q_actual
+            elif self.__controller_mode == ControllerMode().tool_based:
+                # for MovL
+                pass
+
+        elif self.__robot_mode == RobotMode().mode_jog:
+            if self.__controller_mode == ControllerMode().joint_based:
+                self.__q_actual = self.__q_target
+                self.__robot_mode = RobotMode().mode_enable
+            elif self.__controller_mode == ControllerMode().tool_based:
+                solved, angles = \
+                    self.inverse_kinematics(*self.__tool_vector_target)
+                if solved:
+                    self.__q_actual = np.array(angles)
+                self.__robot_mode = RobotMode().mode_enable
 
     def __update_qd(self, timestep: float):
         self.__qd_actual = (self.__q_actual - self.__q_previous) / timestep
@@ -171,9 +219,11 @@ class DobotHardware:
     def update_status(self, timestep: float):
         """update_status"""
         with self.__lock:
-            self.__q_controller()
+            self.__q_controller(timestep)
             self.__update_qd(timestep)
             self.__q_previous = self.__q_actual
+            self.__tool_vector_actual = self.forward_kinematics(
+                *self.__q_actual)
             self.__pack_status()
             return self.__status.packet()
 
@@ -197,3 +247,11 @@ class RobotMode:
         self.mode_error = 9
         self.mode_pause = 10
         self.mode_jog = 11
+
+
+class ControllerMode:
+    """ControllerMode"""
+
+    def __init__(self):
+        self.joint_based = 1
+        self.tool_based = 2
