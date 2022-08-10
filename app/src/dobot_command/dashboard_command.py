@@ -12,6 +12,8 @@ class DashboardCommands:
 
     def EnableRobot(self, *args) -> str:
         """EnableRobot"""
+        # TODO: to be acceptable optional args.
+        _ = args  # for pylint waring
         error_id = self.__dobot.get_error_id()
         if error_id == 0:
             self.__dobot.set_robot_mode(RobotMode().mode_init)

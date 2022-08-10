@@ -11,11 +11,25 @@ class MotionCommands:
     def __init__(self, dobot: DobotHardware) -> None:
         self.__dobot = dobot
 
-    def MovJ(self, X, Y, Z, Rx, Ry, Rz, **kwargs):
+    def MovJ(self, args):
         """MovJ"""
+        if len(args) < 6:
+            return False
+        X, Y, Z, Rx, Ry, Rz = map(float, args[0:6])
+        solved, j_1, j_2, j_3, j_4 = self.__dobot.inverse_kinematics(
+            X, Y, Z, Rx, Ry, Rz)
+        print(f"solved:{solved}")
+        print(f"j1:{j_1}")
+        print(f"j2:{j_2}")
+        print(f"j3:{j_3}")
+        print(f"j4:{j_4}")
+        if solved:
+            angles = [j_1, j_2, j_3, j_4, 0, 0]
+            self.__dobot.set_q_target(angles)
 
-    def MoveJog(self, axis_id: str):
+    def MoveJog(self, axis_id: str, *args):
         """MoveJog"""
+        _ = args  # for pylint waring
         # TODO: update the following algorithm
         # temporary implementation:
         # The following algorithm differs from that of the actual Dobot.

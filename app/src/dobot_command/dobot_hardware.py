@@ -1,9 +1,14 @@
 """Dobot Hardware."""
 
+import math
 import threading
 from typing import List
 
 import numpy as np
+from dobot_command.utils_kinematics_mg400 import (J1_MAX, J1_MIN, J2_MAX,
+                                                  J2_MIN, J3_1_MAX, J3_1_MIN,
+                                                  J3_MAX, J3_MIN, in_check)
+from numpy import linalg as LA
 from tcp_interface.realtime_packet import RealtimePacket
 
 
@@ -39,6 +44,11 @@ class DobotHardware:
         self.__q_previous = np.array([0] * 6)
         self.__status = RealtimePacket()
         self.__lock = threading.Lock()
+
+        self.__link1 = np.array([43, 0])
+        self.__link2 = np.array([0, 175])
+        self.__link3 = np.array([175, 0])
+        self.__link4 = np.array([66, -57])
 
     def __pack_status(self):
         self.__status.write("digital_inputs", self.__digital_inputs)
@@ -86,6 +96,39 @@ class DobotHardware:
         with self.__lock:
             self.__pack_status()
             return self.__status.packet()
+
+    def inverse_kinematics(self, p_x, p_y, p_z, Rx, Ry, Rz):
+        """inverse_kinematics"""
+        _, _ = Rx, Ry  # for pylint waring
+
+        p_x = p_x - self.__link4[0] - self.__link1[0]
+        p_z = p_z - self.__link4[1] - self.__link1[1]
+        length2 = LA.norm(self.__link2)
+        length3 = LA.norm(self.__link3)
+
+        j1_ik = math.atan2(p_y, p_x)
+        j1_ik = np.rad2deg(j1_ik)
+        if not in_check(J1_MIN, j1_ik, J1_MAX):
+            return False, 0, 0, 0, 0
+
+        val1 = (p_x**2+p_z**2-length2**2-length3**2) / (2*length2*length3)
+        if val1 < -1 or val1 > 1:
+            return False, 0, 0, 0, 0
+
+        j3_1_ik = math.asin(val1)
+        j2_ik = math.atan2(p_z, p_x) -\
+            math.atan2(length2+length3 * math.sin(j3_1_ik),
+                       length3*math.cos(j3_1_ik))
+        j2_ik = -np.rad2deg(j2_ik)
+        j3_1_ik = -np.rad2deg(j3_1_ik)
+        j3_ik = j2_ik + j3_1_ik
+
+        if not(in_check(J2_MIN, j2_ik, J2_MAX) and
+               in_check(J3_1_MIN, j3_1_ik, J3_1_MAX) and in_check(J3_MIN, j3_ik, J3_MAX)):
+            return False, 0, 0, 0, 0
+
+        j4_ik = Rz - j1_ik
+        return True, j1_ik, j2_ik, j3_ik, j4_ik
 
     def set_robot_mode(self, mode: int):
         """set_robot_mode"""
