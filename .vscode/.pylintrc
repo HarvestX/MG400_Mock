@@ -16,4 +16,6 @@ good-names=
     MovJ,
     EnableRobot,
     DisableRobot,
-    GetErrorID
+    GetErrorID,
+    X, Y, Z,
+    Rx, Ry, Rz
