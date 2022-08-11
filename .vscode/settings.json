@@ -7,10 +7,6 @@
     "[python]": {
         "editor.formatOnSave": true
     },
-    "cSpell.words": [
-        "ndarray",
-        "timestep"
-    ],
     "python.linting.pylintArgs": [
         "--rcfile=${workspaceFolder}/.vscode/.pylintrc"
     ]

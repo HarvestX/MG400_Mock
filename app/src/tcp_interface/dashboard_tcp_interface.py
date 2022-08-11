@@ -11,11 +11,10 @@ from .tcp_interface_base import TcpInterfaceBase
 
 class DashboardTcpInterface(TcpInterfaceBase):
     """DashboardTcpInterface"""
+
     logger: logging.Logger
 
-    def __init__(
-        self, ip: str, port: int, dobot: DobotHardware
-    ) -> None:
+    def __init__(self, ip: str, port: int, dobot: DobotHardware) -> None:
         super().__init__(ip, port, self.callback)
         self.__dashboard_commands = DashboardCommands(dobot)
         self.logger = logging.getLogger("Dashboard Tcp Interface")
@@ -31,8 +30,11 @@ class DashboardTcpInterface(TcpInterfaceBase):
                     self.logger.info(recv)
 
                     try:
-                        FunctionParser.exec(self.__dashboard_commands, recv)
+                        res = FunctionParser.exec(
+                            self.__dashboard_commands, recv)
                     except ValueError as err:
                         self.logger.error(err)
 
-                    connection.send((recv + " returned.").encode())
+                    return_str = res+recv+";"
+                    print("RETURN: " + return_str)
+                    connection.send((return_str).encode())

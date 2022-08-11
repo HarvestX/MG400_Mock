@@ -1,3 +1,7 @@
+[MASTER]
+
+init-hook='import sys; sys.path.append("./app/src/")'
+
 [BASIC]
 
 good-names=
@@ -8,6 +12,13 @@ good-names=
     TCP_speed_target,
     set_TCP_speed_target,
     ClearError,
-    MoveJog
+    MoveJog,
+    MovJ,
+    EnableRobot,
+    DisableRobot,
+    GetErrorID,
+    X, Y, Z,
+    Rx, Ry, Rz
 
-init-hook="./app/src"
+[FORMAT]
+max-line-length=88
