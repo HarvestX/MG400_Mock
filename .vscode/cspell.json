@@ -4,6 +4,22 @@
   "words": [
     "dobot",
     "dtype",
-    "tobytes"
+    "tobytes",
+    "backdrive",
+    "imshow",
+    "linalg",
+    "linewidth",
+    "matplotlib",
+    "mtrx",
+    "ndarray",
+    "pyplot",
+    "timestep",
+    "valinit",
+    "velo",
+    "xdata",
+    "xlim",
+    "ydata",
+    "ylim",
+    "zorder"
   ]
 }

@@ -7,24 +7,6 @@
     "[python]": {
         "editor.formatOnSave": true
     },
-    "cSpell.words": [
-        "backdrive",
-        "imshow",
-        "linalg",
-        "linewidth",
-        "matplotlib",
-        "mtrx",
-        "ndarray",
-        "pyplot",
-        "timestep",
-        "valinit",
-        "velo",
-        "xdata",
-        "xlim",
-        "ydata",
-        "ylim",
-        "zorder"
-    ],
     "python.linting.pylintArgs": [
         "--rcfile=${workspaceFolder}/.vscode/.pylintrc"
     ]
