@@ -11,6 +11,18 @@ J3_1_MIN = -60
 J3_1_MAX = 60
 
 
+def in_working_space_angle(angles):
+    """in_working_space_angle"""
+    j_1, j_2, j_3, _, _, _ = angles
+    j_1_able = in_check(J1_MIN, j_1, J1_MAX)
+    j_2_able = in_check(J2_MIN, j_2, J2_MAX)
+    j_3_able = in_check(J3_MIN, j_3, J3_MAX)
+    j_3_1_able = in_check(J3_1_MIN, j_2 + j_3, J3_1_MAX)
+    if j_1_able and j_2_able and j_3_able and j_3_1_able:
+        return True
+    return False
+
+
 def rot_y(vec, angle):
     """rot_y"""
     angle = np.deg2rad(angle)

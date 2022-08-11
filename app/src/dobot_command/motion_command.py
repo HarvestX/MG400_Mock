@@ -1,7 +1,6 @@
 """Dobot Motion Commands."""
 
-from dobot_command.dobot_hardware import (ControllerMode, DobotHardware,
-                                          RobotMode)
+from dobot_command.dobot_hardware import DobotHardware, RobotMode
 
 
 class MotionCommands:
@@ -15,15 +14,17 @@ class MotionCommands:
         # TODO: to be acceptable optional args.
         if len(args) < 6:
             return False
-        X, Y, Z, Rx, Ry, Rz = map(float, args[0:6])
-        solved, angles = self.__dobot.inverse_kinematics(
-            X, Y, Z, Rx, Ry, Rz)
+        tool_vec = list(map(float, args[0:6]))
+        solved, angles = self.__dobot.inverse_kinematics(tool_vec)
         if solved:
-            self.__dobot.set_q_target(angles)
-            self.__dobot.set_qd_target([10]*6)
             self.__dobot.set_robot_mode(RobotMode().mode_running)
-            self.__dobot.set_controller_mode(ControllerMode().joint_based)
-        return True
+            print(angles)
+            print(tool_vec)
+            self.__dobot.set_tool_vector_target(tool_vec)
+            self.__dobot.set_q_target(angles)
+            self.__dobot.set_qd_target([5]*6)
+            return True
+        # return False
 
     def MoveJog(self, args):
         """MoveJog"""
@@ -33,6 +34,7 @@ class MotionCommands:
         axis_id = args[0]
         angle_step = 1
         pos_step = 1
+        solved = False
 
         options_joint = ["j1+", "j1-", "j2+", "j2-", "j3+",
                          "j3-", "j4+", "j4-", "j5+", "j5-", "j6+", "j6-"]
@@ -43,10 +45,7 @@ class MotionCommands:
                 angles[index] += angle_step
             else:
                 angles[index] -= angle_step
-            self.__dobot.set_robot_mode(RobotMode().mode_jog)
-            self.__dobot.set_q_target(angles)
-            self.__dobot.set_controller_mode(ControllerMode().joint_based)
-            return True
+            solved, tool_vec = self.__dobot.forward_kinematics(angles)
 
         options_tool = ["x+", "x-", "y+", "y-", "z+",
                         "z-", "rx+", "rx-", "ry+", "ry-", "rz+", "rz-"]
@@ -58,10 +57,13 @@ class MotionCommands:
                 tool_vec[index] += step
             else:
                 tool_vec[index] -= step
+            solved, angles = self.__dobot.inverse_kinematics(tool_vec)
 
+        if solved:
             self.__dobot.set_robot_mode(RobotMode().mode_jog)
             self.__dobot.set_tool_vector_target(tool_vec)
-            self.__dobot.set_controller_mode(ControllerMode().tool_based)
+            self.__dobot.set_q_target(angles)
+            self.__dobot.set_qd_target([5]*6)
             return True
 
         return False
