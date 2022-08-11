@@ -2,6 +2,7 @@
 
 import dobot_command.robot_mode as robot_mode
 from dobot_command.dobot_hardware import DobotHardware
+from utilities.kinematics_mg400 import forward_kinematics, inverse_kinematics
 
 
 class MotionCommands:
@@ -19,7 +20,7 @@ class MotionCommands:
         if len(args) < 6:
             return False
         tool_vec = list(map(float, args[0:6]))
-        solved, angles = self.__dobot.inverse_kinematics(tool_vec)
+        solved, angles = inverse_kinematics(tool_vec)
         if solved:
             self.__dobot.set_robot_mode(robot_mode.MODE_RUNNING)
             self.__dobot.set_tool_vector_target(tool_vec)
@@ -50,7 +51,7 @@ class MotionCommands:
                 angles[index] += angle_step
             else:
                 angles[index] -= angle_step
-            solved, tool_vec = self.__dobot.forward_kinematics(angles)
+            solved, tool_vec = forward_kinematics(angles)
 
         options_tool = ["x+", "x-", "y+", "y-", "z+",
                         "z-", "rx+", "rx-", "ry+", "ry-", "rz+", "rz-"]
@@ -62,7 +63,7 @@ class MotionCommands:
                 tool_vec[index] += step
             else:
                 tool_vec[index] -= step
-            solved, angles = self.__dobot.inverse_kinematics(tool_vec)
+            solved, angles = inverse_kinematics(tool_vec)
 
         if solved:
             self.__dobot.set_robot_mode(robot_mode.MODE_JOG)

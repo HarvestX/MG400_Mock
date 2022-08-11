@@ -2,7 +2,7 @@
 
 import dobot_command.robot_mode as robot_mode
 from dobot_command.dobot_hardware import DobotHardware
-from dobot_command.return_msg_generator import generate_return_msg
+from utilities.return_msg_generator import generate_return_msg
 
 
 class DashboardCommands:
