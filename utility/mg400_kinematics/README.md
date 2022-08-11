@@ -6,7 +6,7 @@
 ## Relation between \{`j2`, `j3`\} and \{`j2_1`, $\cdots$, `j5`\}
 
 - MG400 has 7 joints as follows:
-![joints](../../materials/joint_names.png)
+![joints](../../media/joint_names.png)
 
 - The motion of MG400 always holds the following relation:
   - `-25<j2<85`

@@ -17,7 +17,7 @@ def init_fig():
     plt.subplots_adjust(left=0.1, bottom=0.15)
     plt.xlim(-300, 500)
     plt.ylim(-300, 500)
-    img = Image.open("../../materials/mg400_workspace.png")
+    img = Image.open("../../media/mg400_workspace.png")
     ax_plt.imshow(img, alpha=1.0, extent=[-487+43, 713+43, -598, 602])
     ax_plt.set_aspect(1)
     return fig, ax_plt
