@@ -21,8 +21,6 @@ class MotionCommands:
         solved, angles = self.__dobot.inverse_kinematics(tool_vec)
         if solved:
             self.__dobot.set_robot_mode(RobotMode().mode_running)
-            print(angles)
-            print(tool_vec)
             self.__dobot.set_tool_vector_target(tool_vec)
             self.__dobot.set_q_target(angles)
             self.__dobot.set_qd_target([5]*6)
