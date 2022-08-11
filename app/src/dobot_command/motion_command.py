@@ -12,6 +12,9 @@ class MotionCommands:
     def MovJ(self, args):
         """MovJ"""
         # TODO: to be acceptable optional args.
+        if self.__dobot.get_robot_mode() is not RobotMode().mode_enable:
+            return False
+
         if len(args) < 6:
             return False
         tool_vec = list(map(float, args[0:6]))
@@ -29,6 +32,9 @@ class MotionCommands:
     def MoveJog(self, args):
         """MoveJog"""
         # TODO: to be acceptable optional args.
+        if self.__dobot.get_robot_mode() is not RobotMode().mode_enable:
+            return False
+
         if len(args) < 1:
             return False
         axis_id = args[0]

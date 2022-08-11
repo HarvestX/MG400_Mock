@@ -28,7 +28,7 @@ class DobotHardware:
 
         self.__digital_inputs = 0
         self.__digital_outputs = 0
-        self.__robot_mode = 0
+        self.__robot_mode = RobotMode().mode_enable
         self.__test_value = 0
         self.__speed_scaling = 1
         self.__q_target: np.ndarray = np.array([0] * 6)
@@ -89,13 +89,18 @@ class DobotHardware:
         with self.__lock:
             return copy.deepcopy(self.__error_id)
 
+    def get_robot_mode(self):
+        """get_robot_mode"""
+        with self.__lock:
+            return copy.deepcopy(self.__robot_mode)
+
     def get_q_actual(self):
-        """set_q_actual"""
+        """get_q_actual"""
         with self.__lock:
             return copy.deepcopy(self.__q_actual)
 
     def get_tool_vector_actual(self):
-        """set_tool_vector_actual"""
+        """get_tool_vector_actual"""
         with self.__lock:
             return copy.deepcopy(self.__tool_vector_actual)
 
