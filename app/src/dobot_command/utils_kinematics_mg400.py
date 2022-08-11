@@ -11,7 +11,7 @@ J3_1_MIN = -60
 J3_1_MAX = 60
 
 
-def in_working_space_angle(angles):
+def in_working_space(angles):
     """in_working_space_angle"""
     j_1, j_2, j_3, _, _, _ = angles
     j_1_able = in_check(J1_MIN, j_1, J1_MAX)

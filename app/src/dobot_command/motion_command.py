@@ -1,6 +1,7 @@
 """Dobot Motion Commands."""
 
-from dobot_command.dobot_hardware import DobotHardware, RobotMode
+import dobot_command.robot_mode as robot_mode
+from dobot_command.dobot_hardware import DobotHardware
 
 
 class MotionCommands:
@@ -12,7 +13,7 @@ class MotionCommands:
     def MovJ(self, args):
         """MovJ"""
         # TODO: to be acceptable optional args.
-        if self.__dobot.get_robot_mode() is not RobotMode().mode_enable:
+        if self.__dobot.get_robot_mode() is not robot_mode.MODE_ENABLE:
             return False
 
         if len(args) < 6:
@@ -20,7 +21,7 @@ class MotionCommands:
         tool_vec = list(map(float, args[0:6]))
         solved, angles = self.__dobot.inverse_kinematics(tool_vec)
         if solved:
-            self.__dobot.set_robot_mode(RobotMode().mode_running)
+            self.__dobot.set_robot_mode(robot_mode.MODE_RUNNING)
             self.__dobot.set_tool_vector_target(tool_vec)
             self.__dobot.set_q_target(angles)
             self.__dobot.set_qd_target([5]*6)
@@ -30,7 +31,7 @@ class MotionCommands:
     def MoveJog(self, args):
         """MoveJog"""
         # TODO: to be acceptable optional args.
-        if self.__dobot.get_robot_mode() is not RobotMode().mode_enable:
+        if self.__dobot.get_robot_mode() is not robot_mode.MODE_ENABLE:
             return False
 
         if len(args) < 1:
@@ -64,7 +65,7 @@ class MotionCommands:
             solved, angles = self.__dobot.inverse_kinematics(tool_vec)
 
         if solved:
-            self.__dobot.set_robot_mode(RobotMode().mode_jog)
+            self.__dobot.set_robot_mode(robot_mode.MODE_JOG)
             self.__dobot.set_tool_vector_target(tool_vec)
             self.__dobot.set_q_target(angles)
             self.__dobot.set_qd_target([5]*6)

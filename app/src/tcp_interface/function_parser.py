@@ -23,11 +23,7 @@ class FunctionParser:
 
         try:
             function = getattr(command_class, function_name_str)
-
-            if args != [""]:
-                res = function(args)
-            else:
-                res = function()
+            res = function(args)
 
             return res
 

@@ -5,9 +5,9 @@ import math
 import threading
 from typing import List
 
+import dobot_command.robot_mode as robot_mode
 import numpy as np
-from dobot_command.utils_kinematics_mg400 import (in_working_space_angle,
-                                                  rot_y, rot_z)
+from dobot_command.utils_kinematics_mg400 import in_working_space, rot_y, rot_z
 from numpy import linalg as LA
 from tcp_interface.realtime_packet import RealtimePacket
 
@@ -28,7 +28,7 @@ class DobotHardware:
 
         self.__digital_inputs = 0
         self.__digital_outputs = 0
-        self.__robot_mode = RobotMode().mode_enable
+        self.__robot_mode = robot_mode.MODE_ENABLE
         self.__test_value = 0
         self.__speed_scaling = 1
         self.__q_target: np.ndarray = np.array([0] * 6)
@@ -89,6 +89,12 @@ class DobotHardware:
         with self.__lock:
             return copy.deepcopy(self.__error_id)
 
+    def get_collision_status(self):
+        """get_collision_status"""
+        # TODO:implementing an algorithm for detecting collisions
+        with self.__lock:
+            return [None] * 6
+
     def get_robot_mode(self):
         """get_robot_mode"""
         with self.__lock:
@@ -113,7 +119,7 @@ class DobotHardware:
     def forward_kinematics(self, angles):
         """forward_kinematics"""
 
-        if not in_working_space_angle(angles):
+        if not in_working_space(angles):
             return False, np.array([0.]*6)
         j_1, j_2, j_3, j_4, _, _ = angles
         pos = self.__link1 + \
@@ -149,7 +155,7 @@ class DobotHardware:
         j3_ik = j2_ik + j3_1_ik
         j4_ik = np.rad2deg(Rz) - j1_ik
 
-        if not in_working_space_angle([j1_ik, j2_ik, j3_ik, j4_ik, 0., 0.]):
+        if not in_working_space([j1_ik, j2_ik, j3_ik, j4_ik, 0., 0.]):
             return False, np.array([0.]*6)
         return True, np.array([j1_ik, j2_ik, j3_ik, j4_ik, 0., 0.])
 
@@ -186,11 +192,11 @@ class DobotHardware:
     def __q_controller(self, timestep):
         # TODO: implement a controller with non-zero accelerations
         if self.__robot_mode in \
-                [RobotMode().mode_running, RobotMode().mode_jog]:
+                [robot_mode.MODE_RUNNING, robot_mode.MODE_JOG]:
             working = np.abs(self.__q_target -
                              self.__q_actual) < self.__qd_target*timestep
             if np.all(working):
-                self.__robot_mode = RobotMode().mode_enable
+                self.__robot_mode = robot_mode.MODE_ENABLE
             else:
                 self.__q_actual = timestep * self.__qd_target * \
                     np.sign(self.__q_target-self.__q_actual) + \
@@ -215,19 +221,3 @@ class DobotHardware:
         """clear_error"""
         with self.__lock:
             self.__error_id = 0
-
-
-class RobotMode:
-    """DobotHardware"""
-
-    def __init__(self):
-        self.mode_init = 1
-        self.mode_brake_open = 2
-        self.mode_disabled = 4
-        self.mode_enable = 5
-        self.mode_backdrive = 6
-        self.mode_running = 7
-        self.mode_recording = 8
-        self.mode_error = 9
-        self.mode_pause = 10
-        self.mode_jog = 11

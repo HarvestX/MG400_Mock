@@ -1,6 +1,7 @@
 """Dobot DashBoard Commands."""
 
-from dobot_command.dobot_hardware import DobotHardware, RobotMode
+import dobot_command.robot_mode as robot_mode
+from dobot_command.dobot_hardware import DobotHardware
 from dobot_command.return_msg_generator import generate_return_msg
 
 
@@ -15,23 +16,26 @@ class DashboardCommands:
         # TODO: to be acceptable optional args.
         _ = args  # for pylint waring
         error_id = self.__dobot.get_error_id()
-        self.__dobot.set_robot_mode(RobotMode().mode_enable)
+        self.__dobot.set_robot_mode(robot_mode.MODE_ENABLE)
         return generate_return_msg(error_id)
 
-    def DisableRobot(self) -> str:
+    def DisableRobot(self, args) -> str:
         """DisableRobot"""
+        _ = args  # for pylint waring
         error_id = self.__dobot.get_error_id()
-        self.__dobot.set_robot_mode(RobotMode().mode_disabled)
+        self.__dobot.set_robot_mode(robot_mode.MODE_DISABLED)
         return generate_return_msg(error_id)
 
-    def ClearError(self) -> str:
+    def ClearError(self, args) -> str:
         """ClearError"""
+        _ = args  # for pylint waring
         self.__dobot.clear_error()
         error_id = self.__dobot.get_error_id()
         return generate_return_msg(error_id)
 
-    def GetErrorID(self) -> str:
+    def GetErrorID(self, args) -> str:
         """GetErrorID"""
+        _ = args  # for pylint waring
         collision = self.__dobot.get_collision_status()
         collision_msg = "["
         for val in collision:
