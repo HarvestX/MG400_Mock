@@ -12,8 +12,12 @@ from PIL import Image
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append('../../app/src/utilities/')
 kinematics_mg400 = importlib.import_module('kinematics_mg400')
-inverse_kinematics = kinematics_mg400.inverse_kinematics
+forward_kinematics = kinematics_mg400.forward_kinematics
 link_pos_2d = kinematics_mg400.link_pos_2d
+J2_MAX = kinematics_mg400.J2_MAX
+J2_MIN = kinematics_mg400.J2_MIN
+J3_MAX = kinematics_mg400.J3_MAX
+J3_MIN = kinematics_mg400.J3_MIN
 
 
 def init_fig():
@@ -30,14 +34,11 @@ def init_fig():
 
 def update(_):
     """update"""
-
-    p_x = x_slider.val
-    p_z = z_slider.val
-
-    tip.set_offsets([p_x, p_z])
-
-    tool_vec = [p_x, 0, p_z, 0, 0, 0]
-    solved, angles = inverse_kinematics(tool_vec)
+    j_2 = j2_slider.val
+    j_3 = j3_slider.val
+    angles = [0, j_2, j_3, 0, 0, 0]
+    solved, tool_vec = forward_kinematics(angles)
+    _ = tool_vec  # for pylint warning
 
     if solved is True:
         link1, link2, link3, link4 = link_pos_2d(angles)
@@ -74,20 +75,14 @@ link4_line = ax.plot([init_link3[0], init_link4[0]],
                      [init_link3[1], init_link4[1]],
                      linewidth=3)
 
-tip = ax.scatter(0, 0, s=100, c="red", zorder=100)
-
 slider1_pos = plt.axes([0.11, 0.05, 0.8, 0.03])
 slider2_pos = plt.axes([0.11, 0.01, 0.8, 0.03])
 
-X_MIN = 100
-X_MAX = 500
-Z_MIN = -300
-Z_MAX = 300
-x_slider = Slider(slider1_pos, "x", X_MIN, X_MAX, valinit=(X_MAX+X_MIN)/2)
-z_slider = Slider(slider2_pos, "z", Z_MIN, Z_MAX, valinit=(Z_MAX+Z_MIN)/2)
+j2_slider = Slider(slider1_pos, "j2 [deg]", J2_MIN, J2_MAX, valinit=0)
+j3_slider = Slider(slider2_pos, "j3 [deg]", J3_MIN, J3_MAX, valinit=0)
 
-x_slider.on_changed(update)
-z_slider.on_changed(update)
+j2_slider.on_changed(update)
+j3_slider.on_changed(update)
 
 plt.grid()
 plt.show()

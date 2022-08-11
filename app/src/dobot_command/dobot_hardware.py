@@ -7,9 +7,9 @@ from typing import List
 
 import dobot_command.robot_mode as robot_mode
 import numpy as np
-from dobot_command.utils_kinematics_mg400 import in_working_space, rot_y, rot_z
 from numpy import linalg as LA
 from tcp_interface.realtime_packet import RealtimePacket
+from utilities.kinematics_mg400 import in_working_space, rot_y, rot_z
 
 
 class DobotHardware:
