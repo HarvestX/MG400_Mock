@@ -14,9 +14,17 @@ good-names=
     ClearError,
     MoveJog,
     MovJ,
+    MovL,
+    JointMovJ,
     EnableRobot,
     DisableRobot,
     GetErrorID,
+    ResetRobot,
+    SpeedFactor,
+    AccJ,
+    AccL,
+    SpeedJ,
+    SpeedL,
     X, Y, Z,
     Rx, Ry, Rz
 

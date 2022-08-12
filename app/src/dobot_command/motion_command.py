@@ -73,3 +73,9 @@ class MotionCommands:
             return True
 
         return False
+
+    def MovL(self, args):
+        """MovL"""
+
+    def JointMovJ(self, args):
+        """JointMovJ"""

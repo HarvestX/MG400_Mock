@@ -46,3 +46,21 @@ class DashboardCommands:
         collision_msg = collision_msg[:-1] + "]"
         error_id = self.__dobot.get_error_id()
         return generate_return_msg(error_id, [collision_msg])
+
+    def ResetRobot(self, args):
+        """ResetRobot"""
+
+    def SpeedFactor(self, args):
+        """SpeedFactor"""
+
+    def AccJ(self, args):
+        """AccJ"""
+
+    def AccL(self, args):
+        """AccL"""
+
+    def SpeedJ(self, args):
+        """SpeedJ"""
+
+    def SpeedL(self, args):
+        """SpeedL"""
