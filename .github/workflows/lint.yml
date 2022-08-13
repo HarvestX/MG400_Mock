@@ -16,6 +16,6 @@ jobs:
         with:
           python-root-list: "app/src"
           use-pylint: false
-          use-black: false,
-          extra-mypy-options: "--ignore-missing-imports",
+          use-black: false
+          extra-mypy-options: "--ignore-missing-imports"
           extra-pycodestyle-options: "--max-line-length=88"
