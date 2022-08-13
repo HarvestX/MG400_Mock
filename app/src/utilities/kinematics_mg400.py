@@ -69,7 +69,7 @@ def forward_kinematics(angles):
         rot_y(LINK3, j_3) + LINK4
 
     p_x, p_y, p_z = rot_z(pos, j_1)
-    Rz = j_1 + j_4
+    Rz = j_4
     return True, np.array([p_x, p_y, p_z, 0, 0, Rz])
 
 
@@ -96,7 +96,7 @@ def inverse_kinematics(tool_vec):
     j_2 = -np.rad2deg(j_2)
     j_3_1 = -np.rad2deg(j_3_1)
     j_3 = j_2 + j_3_1
-    j_4 = np.rad2deg(Rz) - j_1
+    j_4 = np.rad2deg(Rz)
     angles = [j_1, j_2, j_3, j_4, 0., 0.]
 
     if not in_working_space(angles):
@@ -123,7 +123,7 @@ def link_pos_2d(angles):
 
 def jacobian_fk(angles):
     """jacobian_fk"""
-    j_1, j_2, j_3, _, _, _ = angles
+    j_1, j_2, j_3, _, _, _ = np.deg2rad(angles)
     len1 = LA.norm(LINK1)
     len2 = LA.norm(LINK2)
     len3 = LA.norm(LINK3)
@@ -147,7 +147,7 @@ def jacobian_fk(angles):
 
 def jacobian_inv(angles):
     """jacobian_inv"""
-    j_1, j_2, j_3, _, _, _ = angles
+    j_1, j_2, j_3, _, _, _ = np.deg2rad(angles)
     len1 = LA.norm(LINK1)
     len2 = LA.norm(LINK2)
     len3 = LA.norm(LINK3)
@@ -170,3 +170,14 @@ def jacobian_inv(angles):
                             [elm_21, elm_22, elm_23],
                             [elm_31, elm_32, elm_33]])
     return jacobi_inv
+
+
+def convert_speed(q_actual, tool_speed):
+    """convert_speed"""
+    joint_speed = np.dot(jacobian_inv(q_actual), tool_speed)
+    return np.rad2deg(np.squeeze(np.asarray(joint_speed)))
+
+
+def normalize_vec(vec):
+    """normalize_vec"""
+    return vec / LA.norm(vec)

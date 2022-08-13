@@ -2,6 +2,8 @@
   "language": "en",
   "version": "0.2",
   "words": [
+    "amax",
+    "asarray",
     "backdrive",
     "dobot",
     "dtype",
@@ -15,6 +17,7 @@
     "sympy",
     "timestep",
     "tobytes",
+    "toolspeed",
     "valinit",
     "velo",
     "xdata",

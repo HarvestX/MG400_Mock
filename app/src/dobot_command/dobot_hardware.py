@@ -4,21 +4,18 @@ import copy
 import threading
 from typing import List
 
+import dobot_command.controller_mode as ctrl_mode
 import dobot_command.robot_mode as robot_mode
 import numpy as np
 from tcp_interface.realtime_packet import RealtimePacket
-from utilities.kinematics_mg400 import forward_kinematics
+from utilities.kinematics_mg400 import (convert_speed, forward_kinematics,
+                                        in_working_space, normalize_vec)
 
 
 class DobotHardware:
     """DobotHardware"""
 
     def __init__(self) -> None:
-        self.__error_id = 0
-        self.__q_previous = np.array([0] * 6)
-        self.__status = RealtimePacket()
-        self.__lock = threading.Lock()
-
         self.__digital_inputs = 0
         self.__digital_outputs = 0
         self.__robot_mode = robot_mode.MODE_ENABLE
@@ -46,6 +43,20 @@ class DobotHardware:
         self.__center_x = 0
         self.__center_y = 0
         self.__center_z = 0
+
+        self.__ctrl_mode = ctrl_mode.MODE_NONE
+        self.__global_speed = 50  # 0-100
+        self.__speed_j_max = 180  # [deg/s]
+        self.__speed_j = 50  # 1-100
+        self.__acc_j = 50  # 1-100
+        self.__speed_l_max = 1000  # [mm/s]
+        self.__speed_l = 50  # 1-100
+        self.__acc_l = 50  # 1-100
+        self.__error_id = 0
+        self.__q_previous = self.__q_actual
+        self.__tool_vector_previous = self.__tool_vector_actual
+        self.__status = RealtimePacket()
+        self.__lock = threading.Lock()
 
     def __pack_status(self):
         self.__status.write("digital_inputs", self.__digital_inputs)
@@ -88,6 +99,11 @@ class DobotHardware:
         with self.__lock:
             return [None] * 6
 
+    def get_global_speed(self):
+        """get_global_speed"""
+        with self.__lock:
+            return copy.deepcopy(self.__global_speed)
+
     def get_robot_mode(self):
         """get_robot_mode"""
         with self.__lock:
@@ -108,6 +124,11 @@ class DobotHardware:
         with self.__lock:
             self.__pack_status()
             return self.__status.packet()
+
+    def set_ctrl_mode(self, mode: int):
+        """set_ctrl_mode"""
+        with self.__lock:
+            self.__ctrl_mode = mode
 
     def set_robot_mode(self, mode: int):
         """set_robot_mode"""
@@ -139,31 +160,70 @@ class DobotHardware:
         with self.__lock:
             self.__TCP_speed_target = np.array(TCP_speed_target)
 
+    def set_speed_j(self, speed_j: int):
+        """set_speed_j"""
+        with self.__lock:
+            self.__speed_j = speed_j
+
+    def set_speed_l(self, speed_l: int):
+        """set_speed_l"""
+        with self.__lock:
+            self.__speed_l = speed_l
+
     def __q_controller(self, timestep):
         # TODO: implement a controller with non-zero accelerations
         if self.__robot_mode in \
                 [robot_mode.MODE_RUNNING, robot_mode.MODE_JOG]:
-            working = np.abs(self.__q_target -
-                             self.__q_actual) < self.__qd_target*timestep
-            if np.all(working):
-                self.__robot_mode = robot_mode.MODE_ENABLE
-            else:
-                self.__q_actual = timestep * self.__qd_target * \
-                    np.sign(self.__q_target-self.__q_actual) + \
-                    self.__q_actual
+            speed_j = self.__global_speed * self.__speed_j_max * self.__speed_j / 100**2
+            speed_l = self.__global_speed * self.__speed_l_max * self.__speed_l / 100**2
+            error_j = self.__q_target-self.__q_actual
+            error_tool = self.__tool_vector_target-self.__tool_vector_actual
 
-    def __update_qd(self, timestep: float):
+            if self.__ctrl_mode is ctrl_mode.MODE_JOINT:
+                self.__qd_target = speed_j * np.sign(error_j)
+
+            if self.__ctrl_mode is ctrl_mode.MODE_TOOL:
+                tool_speed = speed_l*normalize_vec(error_tool[0:3])
+                joint_speed = convert_speed(self.__q_actual, tool_speed)
+                effector_speed = speed_j * np.sign(error_tool[3:6])
+                self.__TCP_speed_target = \
+                    np.concatenate([tool_speed, effector_speed], 0)
+                self.__qd_target = \
+                    np.concatenate([joint_speed, effector_speed[::-1]], 0)
+
+            working = np.abs(error_j) <= np.abs(self.__qd_target)*timestep
+            if np.all(working):
+                self.__q_actual = self.__q_target
+                self.__robot_mode = robot_mode.MODE_ENABLE
+                self.__ctrl_mode = ctrl_mode.MODE_NONE
+                print("Finish Control.")
+            else:
+                updated_q = timestep * self.__qd_target + self.__q_actual
+                if in_working_space(updated_q):
+                    self.__q_actual = updated_q
+                else:
+                    self.__robot_mode = robot_mode.MODE_ENABLE
+                    self.__ctrl_mode = ctrl_mode.MODE_NONE
+                    print("Out of Range.")
+                    return None
+
+    def __update_actual_status(self, timestep: float):
+        solved, tool_vec = forward_kinematics(self.__q_actual)
+        if solved:
+            self.__tool_vector_actual = tool_vec
+
         self.__qd_actual = (self.__q_actual - self.__q_previous) / timestep
+        self.__TCP_speed_actual = (
+            self.__tool_vector_actual - self.__tool_vector_previous) / timestep
+
+        self.__q_previous = self.__q_actual
+        self.__tool_vector_previous = self.__tool_vector_actual
 
     def update_status(self, timestep: float):
         """update_status"""
         with self.__lock:
             self.__q_controller(timestep)
-            self.__update_qd(timestep)
-            solved, tool_vec = forward_kinematics(self.__q_actual)
-            if solved:
-                self.__tool_vector_actual = tool_vec
-            self.__q_previous = self.__q_actual
+            self.__update_actual_status(timestep)
             self.__pack_status()
             return self.__status.packet()
 
