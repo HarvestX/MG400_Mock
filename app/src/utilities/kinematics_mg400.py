@@ -119,3 +119,54 @@ def link_pos_2d(angles):
     link4_rot = link3_rot + LINK4
 
     return LINK1[::2], link2_rot[::2], link3_rot[::2], link4_rot[::2]
+
+
+def jacobian_fk(angles):
+    """jacobian_fk"""
+    j_1, j_2, j_3, _, _, _ = angles
+    len1 = LA.norm(LINK1)
+    len2 = LA.norm(LINK2)
+    len3 = LA.norm(LINK3)
+    len4_x = LINK4[0]
+
+    elm_11 = -np.sin(j_1)*(len1 + len4_x + len3*np.cos(j_3) + len2*np.sin(j_2))
+    elm_12 = len2*np.cos(j_1)*np.cos(j_2)
+    elm_13 = -len3*np.cos(j_1)*np.sin(j_3)
+    elm_21 = np.cos(j_1)*(len1 + len4_x + len3*np.cos(j_3) + len2*np.sin(j_2))
+    elm_22 = len2*np.cos(j_2)*np.sin(j_1)
+    elm_23 = -len3*np.sin(j_1)*np.sin(j_3)
+    elm_31 = 0.
+    elm_32 = -len2*np.sin(j_2)
+    elm_33 = -len3*np.cos(j_3)
+
+    jacobi = np.matrix([[elm_11, elm_12, elm_13],
+                        [elm_21, elm_22, elm_23],
+                        [elm_31, elm_32, elm_33]])
+    return jacobi
+
+
+def jacobian_inv(angles):
+    """jacobian_inv"""
+    j_1, j_2, j_3, _, _, _ = angles
+    len1 = LA.norm(LINK1)
+    len2 = LA.norm(LINK2)
+    len3 = LA.norm(LINK3)
+    len4_x = LINK4[0]
+    denom1 = len1 + len4_x + len3*np.cos(j_3) + len2*np.sin(j_2)
+    denom2 = len2*np.cos(j_2-j_3)
+    denom3 = len3*np.cos(j_2-j_3)
+
+    elm_11 = -np.sin(j_1)/denom1
+    elm_12 = np.cos(j_1)/denom1
+    elm_13 = 0
+    elm_21 = np.cos(j_1)*np.cos(j_3)/denom2
+    elm_22 = np.sin(j_1)*np.cos(j_3)/denom2
+    elm_23 = -np.sin(j_3)/denom2
+    elm_31 = -np.cos(j_1)*np.sin(j_2)/denom3
+    elm_32 = -np.sin(j_1)*np.sin(j_2)/denom3
+    elm_33 = -np.cos(j_2)/denom3
+
+    jacobi_inv = np.matrix([[elm_11, elm_12, elm_13],
+                            [elm_21, elm_22, elm_23],
+                            [elm_31, elm_32, elm_33]])
+    return jacobi_inv
