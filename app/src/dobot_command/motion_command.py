@@ -15,9 +15,12 @@ class MotionCommands:
     def MovJ(self, args):
         """MovJ"""
         # TODO: to be acceptable optional args.
+        self.__dobot.set_count()
         if self.__dobot.get_robot_mode() is not robot_mode.MODE_ENABLE:
+            self.__dobot.log_msg("mode is enable.")
             return False
         if len(args) < 6:
+            self.__dobot.log_msg("number of args is not validated.")
             return False
 
         tool_vec = list(map(float, args[0:6]))
@@ -25,9 +28,12 @@ class MotionCommands:
         if solved:
             self.__dobot.set_robot_mode(robot_mode.MODE_RUNNING)
             self.__dobot.set_ctrl_mode(ctrl_mode.MODE_JOINT)
+            self.__dobot.register_init_status()
             self.__dobot.set_tool_vector_target(tool_vec)
             self.__dobot.set_q_target(angles)
             return True
+
+        self.__dobot.log_msg("out of range.")
         return False
 
     def MoveJog(self, args):
@@ -71,6 +77,7 @@ class MotionCommands:
 
         if solved:
             self.__dobot.set_robot_mode(robot_mode.MODE_JOG)
+            self.__dobot.register_init_status()
             self.__dobot.set_tool_vector_target(tool_vec)
             self.__dobot.set_q_target(angles)
             return True
@@ -81,19 +88,23 @@ class MotionCommands:
         # TODO: to be acceptable optional args.
         if self.__dobot.get_robot_mode() is not robot_mode.MODE_ENABLE:
             return False
-
         if len(args) < 6:
             return False
         tool_target = list(map(float, args[0:6]))
-        solved, angles = inverse_kinematics(tool_target)
 
-        if solved:
+        self.__dobot.set_tool_vector_target(tool_target)
+        self.__dobot.register_init_status()
+        time_acc, time_const, _ = self.__dobot.mov_l_time()
+        flag = self.__dobot.generate_liner_target(
+            time_acc, time_const, 8.0 / 1000)
+        if not flag:
+            self.__dobot.log_msg("no liner interpolate.")
+            return False
+        else:
             self.__dobot.set_robot_mode(robot_mode.MODE_RUNNING)
             self.__dobot.set_ctrl_mode(ctrl_mode.MODE_TOOL)
-            self.__dobot.set_tool_vector_target(tool_target)
-            self.__dobot.set_q_target(angles)
+            self.__dobot.reset_time_index()
             return True
-        return False
 
     def JointMovJ(self, args):
         """JointMovJ"""
