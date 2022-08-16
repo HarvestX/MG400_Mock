@@ -9,7 +9,7 @@ good-names=
     __TCP_speed_actual,
     __TCP_force,
     __TCP_speed_target,
-    __TCP_speed_ref,
+    __TCP_speed_init,
     TCP_speed_target,
     set_TCP_speed_target,
     ClearError,

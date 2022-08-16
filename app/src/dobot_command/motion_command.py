@@ -1,6 +1,5 @@
 """Dobot Motion Commands."""
 
-import dobot_command.controller_mode as ctrl_mode
 import dobot_command.robot_mode as robot_mode
 from dobot_command.dobot_hardware import DobotHardware
 from utilities.kinematics_mg400 import forward_kinematics, inverse_kinematics
@@ -15,25 +14,23 @@ class MotionCommands:
     def MovJ(self, args):
         """MovJ"""
         # TODO: to be acceptable optional args.
-        self.__dobot.set_count()
         if self.__dobot.get_robot_mode() is not robot_mode.MODE_ENABLE:
-            self.__dobot.log_msg("mode is enable.")
+            self.__dobot.log_info_msg("mode is enable.")
             return False
         if len(args) < 6:
-            self.__dobot.log_msg("number of args is not validated.")
+            self.__dobot.log_info_msg("number of args is not validated.")
             return False
 
-        tool_vec = list(map(float, args[0:6]))
-        solved, angles = inverse_kinematics(tool_vec)
-        if solved:
+        tool_target = list(map(float, args[0:6]))
+        self.__dobot.set_tool_vector_target(tool_target)
+        self.__dobot.register_init_status()
+        accepted = self.__dobot.generate_target_in_joint()
+        if accepted:
             self.__dobot.set_robot_mode(robot_mode.MODE_RUNNING)
-            self.__dobot.set_ctrl_mode(ctrl_mode.MODE_JOINT)
-            self.__dobot.register_init_status()
-            self.__dobot.set_tool_vector_target(tool_vec)
-            self.__dobot.set_q_target(angles)
+            self.__dobot.reset_time_index()
             return True
 
-        self.__dobot.log_msg("out of range.")
+        self.__dobot.log_info_msg("out of range.")
         return False
 
     def MoveJog(self, args):
@@ -60,7 +57,6 @@ class MotionCommands:
             else:
                 angles[index] -= angle_step
             solved, tool_vec = forward_kinematics(angles)
-            self.__dobot.set_ctrl_mode(ctrl_mode.MODE_JOINT)
 
         options_tool = ["x+", "x-", "y+", "y-", "z+",
                         "z-", "rx+", "rx-", "ry+", "ry-", "rz+", "rz-"]
@@ -73,7 +69,6 @@ class MotionCommands:
             else:
                 tool_vec[index] -= step
             solved, angles = inverse_kinematics(tool_vec)
-            self.__dobot.set_ctrl_mode(ctrl_mode.MODE_TOOL)
 
         if solved:
             self.__dobot.set_robot_mode(robot_mode.MODE_JOG)
@@ -94,17 +89,14 @@ class MotionCommands:
 
         self.__dobot.set_tool_vector_target(tool_target)
         self.__dobot.register_init_status()
-        time_acc, time_const, _ = self.__dobot.mov_l_time()
-        flag = self.__dobot.generate_liner_target(
-            time_acc, time_const, 8.0 / 1000)
-        if not flag:
-            self.__dobot.log_msg("no liner interpolate.")
-            return False
-        else:
+        accepted = self.__dobot.generate_target_in_tool()
+        if accepted:
             self.__dobot.set_robot_mode(robot_mode.MODE_RUNNING)
-            self.__dobot.set_ctrl_mode(ctrl_mode.MODE_TOOL)
             self.__dobot.reset_time_index()
             return True
+
+        self.__dobot.log_info_msg("no liner interpolate.")
+        return False
 
     def JointMovJ(self, args):
         """JointMovJ"""

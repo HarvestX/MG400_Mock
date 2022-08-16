@@ -22,6 +22,8 @@
     "timestep",
     "tobytes",
     "toolspeed",
+    "traj",
+    "trajs",
     "valinit",
     "velo",
     "watanabe",

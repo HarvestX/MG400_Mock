@@ -6,12 +6,11 @@ import threading
 from logging import getLogger
 from typing import List
 
-import dobot_command.controller_mode as ctrl_mode
 import dobot_command.robot_mode as robot_mode
 import numpy as np
 from tcp_interface.realtime_packet import RealtimePacket
-from utilities.kinematics_mg400 import (forward_kinematics, in_working_space,
-                                        inverse_kinematics, normalize_vec)
+from utilities.kinematics_mg400 import (forward_kinematics, inverse_kinematics,
+                                        normalize_vec)
 
 
 class DobotHardware:
@@ -61,13 +60,12 @@ class DobotHardware:
         # end (adjust value)
         self.__update_speed_acc_params()
 
-        self.__ctrl_mode = ctrl_mode.MODE_NONE
         self.__q_init = np.array([0] * 6)
         self.__tool_vector_init = np.array([0] * 6)
         self.__q_previous = self.__q_actual
         self.__tool_vector_previous = self.__tool_vector_actual
-        self.__qd_ref = np.array([0]*6)
-        self.__speed_l_ref = 0
+        self.__qd_init = np.array([0]*6)
+        self.__TCP_speed_init = np.array([0]*6)
         self.__status = RealtimePacket()
         self.__lock = threading.Lock()
 
@@ -77,6 +75,7 @@ class DobotHardware:
         self.__q_target_set: List[np.ndarray] = []
         self.__tool_vector_target_set: List[np.ndarray] = []
         self.__time_index = 0
+        self.__timestep = 8.0 / 1000
 
     def __pack_status(self):
         self.__status.write("digital_inputs", self.__digital_inputs)
@@ -102,11 +101,6 @@ class DobotHardware:
         self.__status.write("center_x", self.__center_x)
         self.__status.write("center_y", self.__center_y)
         self.__status.write("center_z", self.__center_z)
-
-    def set_count(self):
-        """set_count"""
-        with self.__lock:
-            self.__count += 1
 
     def reset_time_index(self):
         """reset_time_index"""
@@ -160,8 +154,8 @@ class DobotHardware:
         with self.__lock:
             self.__q_init = self.__q_actual
             self.__tool_vector_init = self.__tool_vector_actual
-            self.__qd_ref = self.__qd_actual
-            self.__speed_l_ref = np.linalg.norm(self.__TCP_speed_actual[0:3])
+            self.__qd_init = self.__qd_actual
+            self.__TCP_speed_init = self.__TCP_speed_actual
 
     def __update_speed_acc_params(self):
         self.__acc_j = self.__acc_j_rate * self.__acc_j_max * 0.01
@@ -170,11 +164,6 @@ class DobotHardware:
             self.__speed_j_max * self.__speed_j_rate * 0.01**2
         self.__speed_l = self.__global_speed_rate * \
             self.__speed_l_max * self.__speed_l_rate * 0.01**2
-
-    def set_ctrl_mode(self, mode: int):
-        """set_ctrl_mode"""
-        with self.__lock:
-            self.__ctrl_mode = mode
 
     def set_robot_mode(self, mode: int):
         """set_robot_mode"""
@@ -216,131 +205,135 @@ class DobotHardware:
         with self.__lock:
             self.__speed_l_rate = speed_l
 
-    def log_msg(self, text):
-        """out_of_range"""
+    def log_info_msg(self, text):
+        """log_info_msg"""
         self.__logger.info("%s: %s", self.__count, text)
 
-    def mov_l_time(self):
-        """cal_move_time"""
+    def __move_time(self, pos_init, pos_target, acc, v_l, v_s):
+        dist = np.abs(pos_target - pos_init)
+        v_s = np.abs(v_s)
+        v_l_max = np.sqrt(acc*dist + v_s**2)
+
+        if v_l_max > v_l:
+            time_acc = (v_l-v_s) / acc
+            time_const = dist/v_l - (v_l**2 - v_s**2) / (acc*v_l)
+            time_total = 2*time_acc + time_const
+        else:
+            time_acc = (v_l_max-v_s)/acc
+            time_const = 0
+            time_total = 2*time_acc
+        return time_acc, time_const, time_total
+
+    def __generate_trapezoid(self, pos_init, pos_target, acc,
+                             v_l, v_s, timestep):
+        """generate_trapezoid"""
+        time_acc, time_const, _ = \
+            self.__move_time(pos_init, pos_target, acc, v_l, v_s)
+        sign_velo = np.sign(pos_target-pos_init)
+
+        time_acc_list = np.linspace(0, time_acc, num=int(
+            time_acc/timestep) + 1, endpoint=True)
+        traj_start = sign_velo * 0.5 * acc * (time_acc_list**2) + pos_init
+
+        time_const_list = np.linspace(0, time_const, num=int(
+            time_const/timestep) + 1, endpoint=True)
+        traj_mid = sign_velo * v_l * time_const_list + traj_start[-1]
+
+        traj_end = traj_mid[-1] - \
+            sign_velo * 0.5 * acc*(time_acc_list**2-2*time_acc_list*time_acc)
+
+        return np.concatenate([traj_start, traj_mid, traj_end], 0)
+
+    def generate_target_in_joint(self):
+        """generate_joint_target"""
+        with self.__lock:
+            solved, angles = inverse_kinematics(self.__tool_vector_target)
+            if solved:
+                self.__q_target = angles
+            else:
+                return False
+
+            q_trajs = []
+            len_max = 0
+            for q_init, q_target, qd_s in \
+                    zip(self.__q_init, self.__q_target, self.__qd_init):
+                traj = self.__generate_trapezoid(
+                    q_init, q_target, self.__acc_j,
+                    self.__speed_j, qd_s, self.__timestep)
+                np.append(traj, q_target)
+                len_max = max(len_max, len(traj))
+                q_trajs.append(traj)
+
+            q_trajs = \
+                [np.concatenate([q_traj, [q_traj[-1]]*(len_max-len(q_traj))], 0)
+                 if len(q_traj) < len_max else q_traj for q_traj in q_trajs]
+            self.__q_target_set = np.array(q_trajs).T
+
+            self.__tool_vector_target_set = []
+            for q_target in self.__q_target_set:
+                _, tool_vec = forward_kinematics(q_target)
+                self.__tool_vector_target_set.append(tool_vec)
+            return True
+
+    def generate_target_in_tool(self):
+        """generate_target_in_tool"""
         with self.__lock:
             dist = np.linalg.norm(
                 self.__tool_vector_target[0:3] - self.__tool_vector_init[0:3])
-            v_max = np.sqrt(self.__acc_l*dist + self.__speed_l_ref**2)
+            v_s = np.linalg.norm(self.__TCP_speed_init[0:3])
+            vec_length = self.__generate_trapezoid(
+                0, dist, self.__acc_l, self.__speed_l, v_s, self.__timestep)
 
-            if v_max > self.__speed_l:
-                time_acc = (self.__speed_l-self.__speed_l_ref) / self.__acc_l
-                time_const = dist/self.__speed_l - \
-                    (self.__speed_l**2 - self.__speed_l_ref**2) / \
-                    (self.__acc_l*self.__speed_l)
-                time_total = 2*time_acc + time_const
-            else:
-                time_acc = (v_max-self.__speed_l_ref)/self.__acc_l
-                time_const = 0
-                time_total = 2*time_acc
-            return time_acc, time_const, time_total
-
-    def generate_liner_target(self, time_acc, time_const, timestep):
-        """intrpt_2d"""
-        with self.__lock:
             direction = normalize_vec(
                 self.__tool_vector_target[0:3] - self.__tool_vector_init[0:3])
-
-            time_acc_list = np.linspace(0, time_acc, num=int(
-                time_acc/timestep) + 1, endpoint=True)
-            length_start = 0.5 * self.__acc_l*(time_acc_list**2)
-
-            time_const_list = np.linspace(0, time_const, num=int(
-                time_const/timestep) + 1, endpoint=True)
-            length_mid = self.__speed_l*time_const_list + length_start[-1]
-
-            length_end = length_mid[-1] - \
-                0.5 * self.__acc_l*(time_acc_list**2-2*time_acc_list*time_acc)
-
-            length_total = np.concatenate(
-                [length_start, length_mid, length_end], 0)
             pos = np.array(
                 [length * direction + self.__tool_vector_init[0:3]
-                 for length in length_total])
+                 for length in vec_length])
             np.append(pos, self.__tool_vector_target[0:3])
 
             self.__tool_vector_target_set = []
             self.__q_target_set = []
             for pos in pos:
                 pos = np.concatenate([pos, [0]*3], 0)
-                flag, angles = inverse_kinematics(pos)
-                if not flag:
-                    print(pos)
-                    return False
-                else:
+                solved, angles = inverse_kinematics(pos)
+                if solved:
                     self.__tool_vector_target_set.append(pos)
                     self.__q_target_set.append(angles)
+                else:
+                    return False
+            self.__q_target = self.__q_target_set[-1]
             return True
 
-    def __q_controller(self, timestep):
+    def __q_controller(self):
         # TODO: implement a controller with non-zero accelerations
-        if self.__robot_mode in \
-                [robot_mode.MODE_RUNNING, robot_mode.MODE_JOG]:
-            error_j = self.__q_target-self.__q_actual
+        if self.__robot_mode in [robot_mode.MODE_RUNNING, robot_mode.MODE_JOG]:
+            self.__q_actual = self.__q_target_set[self.__time_index]
+            # self.log_info_msg(f"index: {self.__time_index}")
+            self.__time_index += 1
+            if self.__time_index >= len(self.__q_target_set):
+                self.__robot_mode = robot_mode.MODE_ENABLE
+                self.__time_index = 0
+                self.__count += 1
+                self.log_info_msg(f"{self.__count}: finish.")
 
-            if self.__ctrl_mode is ctrl_mode.MODE_JOINT:
-                acc_sign = 0.5 * np.abs(self.__q_target - self.__q_init) >= \
-                    np.abs(self.__q_actual - self.__q_init)
-                acc = np.where(acc_sign, -1, 1) * \
-                    np.sign(error_j) * self.__acc_j
-                self.__qd_ref += acc * timestep
-                self.__qd_target = np.sign(error_j) * \
-                    np.clip(np.abs(self.__qd_ref), 3, self.__speed_j)
-
-                working = np.abs(error_j) <= np.abs(
-                    self.__qd_target) * timestep
-                if np.all(working):
-                    self.__q_actual = self.__q_target
-                    self.__qd_target = np.array([0]*6)
-                    self.__TCP_speed_target = np.array([0]*6)
-                    self.__robot_mode = robot_mode.MODE_ENABLE
-                    self.__ctrl_mode = ctrl_mode.MODE_NONE
-                    self.log_msg("finish.")
-
-                updated_q = timestep * self.__qd_target + self.__q_actual
-                if in_working_space(updated_q):
-                    self.__q_actual = updated_q
-                else:
-                    self.__robot_mode = robot_mode.MODE_ENABLE
-                    self.__ctrl_mode = ctrl_mode.MODE_NONE
-                    self.log_msg("out of range.")
-
-            if self.__ctrl_mode is ctrl_mode.MODE_TOOL:
-                self.__q_target = self.__q_target_set[self.__time_index]
-                self.__tool_vector_target = \
-                    self.__tool_vector_target_set[self.__time_index]
-                self.__q_actual = self.__q_target
-                velo = np.linalg.norm(self.__TCP_speed_actual[0:3])
-                self.log_msg(f"index: {self.__time_index}, velo: {velo}")
-
-                self.__time_index += 1
-                if self.__time_index >= len(self.__q_target_set):
-                    self.__robot_mode = robot_mode.MODE_ENABLE
-                    self.__ctrl_mode = ctrl_mode.MODE_NONE
-                    self.__time_index = 0
-                    self.log_msg("finish.")
-
-    def __update_actual_status(self, timestep: float):
+    def __update_actual_status(self):
         solved, tool_vec = forward_kinematics(self.__q_actual)
         if solved:
             self.__tool_vector_actual = tool_vec
 
-        self.__qd_actual = (self.__q_actual - self.__q_previous) / timestep
+        self.__qd_actual = (
+            self.__q_actual - self.__q_previous) / self.__timestep
         self.__TCP_speed_actual = (
-            self.__tool_vector_actual - self.__tool_vector_previous) / timestep
+            self.__tool_vector_actual - self.__tool_vector_previous) / self.__timestep
 
         self.__q_previous = self.__q_actual
         self.__tool_vector_previous = self.__tool_vector_actual
 
-    def update_status(self, timestep: float):
+    def update_status(self):
         """update_status"""
         with self.__lock:
-            self.__q_controller(timestep)
-            self.__update_actual_status(timestep)
+            self.__q_controller()
+            self.__update_actual_status()
             self.__pack_status()
             return self.__status.packet()
 

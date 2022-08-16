@@ -24,20 +24,20 @@ EPS = 1
 
 for _ in range(100):
 
-    solved = False
-    while not solved:
+    SOLVED = False
+    while not SOLVED:
         j_1 = round(random.uniform(J1_MIN+EPS, J1_MAX-EPS), 3)
         j_2 = round(random.uniform(J2_MIN+EPS, J2_MAX-EPS), 3)
         j_3 = round(random.uniform(J3_MIN+EPS, J3_MAX-EPS), 3)
         j_4 = round(random.uniform(-180+EPS, 180-EPS), 3)
 
         angles = np.array([j_1, j_2, j_3, j_4, 0, 0])
-        solved, tool_vec = forward_kinematics(angles)
+        SOLVED, tool_vec = forward_kinematics(angles)
 
     xx = round(tool_vec[0]/1000, 3)
     yy = round(tool_vec[1]/1000, 3)
     zz = round(tool_vec[2]/1000, 3)
-    cmd = "ros2 service call /mg400/mov_l mg400_msgs/srv/MovL " \
+    cmd = "ros2 service call /mg400/mov_j mg400_msgs/srv/MovJ " \
         f"'{{x: {xx}, y: {yy}, z: {zz}}}'"
 
     print(cmd)
