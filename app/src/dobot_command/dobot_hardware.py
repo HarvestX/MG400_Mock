@@ -327,15 +327,27 @@ class DobotHardware:
 
             direction = normalize_vec(
                 self.__tool_vector_target[0:3] - self.__tool_vector_init[0:3])
-            pos = np.array(
+            pos_list = np.array(
                 [length * direction + self.__tool_vector_init[0:3]
                  for length in vec_length])
-            np.append(pos, self.__tool_vector_target[0:3])
+            np.append(pos_list, self.__tool_vector_target[0:3])
+
+            r_z_traj = self.__generate_trapezoid(
+                self.__tool_vector_init[-1], self.__tool_vector_target[-1],
+                self.__acc_j, self.__speed_j, self.__TCP_speed_init[-1],
+                self.__timestep)
+
+            if len(r_z_traj) < len(pos_list):
+                r_z_traj = np.concatenate(
+                    [r_z_traj, [r_z_traj[-1]]*(len(pos_list)-len(r_z_traj))], 0)
+            elif len(r_z_traj) > len(pos_list):
+                pos_list = np.concatenate(
+                    [pos_list, [pos_list[-1]]*(len(r_z_traj)-len(pos_list))], 0)
 
             self.__tool_vector_target_set = []
             self.__q_target_set = []
-            for pos in pos:
-                pos = np.concatenate([pos, [0]*3], 0)
+            for pos, r_z in zip(pos_list, r_z_traj):
+                pos = np.concatenate([pos, [0, 0, r_z]], 0)
                 solved, angles = inverse_kinematics(pos)
                 if solved:
                     self.__tool_vector_target_set.append(pos)
@@ -386,17 +398,16 @@ class DobotHardware:
     def __q_controller(self):
         if self.__robot_mode is robot_mode.MODE_RUNNING:
             self.__q_actual = self.__q_target_set[self.__time_index]
-            self.__log_info_msg(f"index: {self.__time_index}")
             self.__time_index += 1
             if self.__time_index >= len(self.__q_target_set):
                 self.__robot_mode = robot_mode.MODE_ENABLE
                 self.__time_index = 0
-                self.__log_info_msg(f"running finish.")
+                self.__log_info_msg("running finish.")
 
         if self.__robot_mode is robot_mode.MODE_JOG:
             self.__q_actual = self.__q_target
             self.__robot_mode = robot_mode.MODE_ENABLE
-            self.__log_info_msg(f"jog finish.")
+            self.__log_info_msg("jog finish.")
 
     def __update_actual_status(self):
         solved, tool_vec = forward_kinematics(self.__q_actual)
