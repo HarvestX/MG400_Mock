@@ -56,7 +56,7 @@ class DobotHardware:
         self.__speed_l_max = 1500  # [mm/s]
         self.__speed_l_rate = 50  # 1-100
         self.__acc_l_max = 1500  # [mm/s^2]
-        self.__acc_l_rate = 100  # 1-100
+        self.__acc_l_rate = 50  # 1-100
         # end (adjust value)
         self.__update_speed_acc_params()
 
@@ -195,15 +195,35 @@ class DobotHardware:
         with self.__lock:
             self.__TCP_speed_target = np.array(TCP_speed_target)
 
+    def set_speed_factor(self, global_speed_rate: int):
+        """set_speed_factor"""
+        with self.__lock:
+            self.__global_speed_rate = global_speed_rate
+            self.__update_speed_acc_params()
+
     def set_speed_j(self, speed_j: int):
         """set_speed_j"""
         with self.__lock:
             self.__speed_j_rate = speed_j
+            self.__update_speed_acc_params()
 
     def set_speed_l(self, speed_l: int):
         """set_speed_l"""
         with self.__lock:
             self.__speed_l_rate = speed_l
+            self.__update_speed_acc_params()
+
+    def set_acc_j(self, acc_j: int):
+        """set_acc_j"""
+        with self.__lock:
+            self.__acc_j_rate = acc_j
+            self.__update_speed_acc_params()
+
+    def set_acc_l(self, acc_l: int):
+        """set_acc_l"""
+        with self.__lock:
+            self.__acc_l_rate = acc_l
+            self.__update_speed_acc_params()
 
     def log_info_msg(self, text):
         """log_info_msg"""
@@ -308,7 +328,7 @@ class DobotHardware:
         # TODO: implement a controller with non-zero accelerations
         if self.__robot_mode in [robot_mode.MODE_RUNNING, robot_mode.MODE_JOG]:
             self.__q_actual = self.__q_target_set[self.__time_index]
-            # self.log_info_msg(f"index: {self.__time_index}")
+            self.log_info_msg(f"index: {self.__time_index}")
             self.__time_index += 1
             if self.__time_index >= len(self.__q_target_set):
                 self.__robot_mode = robot_mode.MODE_ENABLE

@@ -22,6 +22,8 @@ J3_MAX = kinematics_mg400.J3_MAX
 J3_MIN = kinematics_mg400.J3_MIN
 EPS = 1
 
+CMD_TYPE = "MovJ"
+
 for _ in range(100):
 
     SOLVED = False
@@ -37,8 +39,13 @@ for _ in range(100):
     xx = round(tool_vec[0]/1000, 3)
     yy = round(tool_vec[1]/1000, 3)
     zz = round(tool_vec[2]/1000, 3)
-    cmd = "ros2 service call /mg400/mov_j mg400_msgs/srv/MovJ " \
-        f"'{{x: {xx}, y: {yy}, z: {zz}}}'"
+
+    if CMD_TYPE == "MovJ":
+        cmd = "ros2 service call /mg400/mov_j mg400_msgs/srv/MovJ " \
+            f"'{{x: {xx}, y: {yy}, z: {zz}}}'"
+    elif CMD_TYPE == "MovL":
+        cmd = "ros2 service call /mg400/mov_l mg400_msgs/srv/MovL " \
+            f"'{{x: {xx}, y: {yy}, z: {zz}}}'"
 
     print(cmd)
     proc = subprocess.run(cmd, shell=True, check=True)
