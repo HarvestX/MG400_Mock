@@ -1,6 +1,6 @@
 """Dobot DashBoard Commands."""
 
-import dobot_command.robot_mode as robot_mode
+from dobot_command import robot_mode
 from dobot_command.dobot_hardware import DobotHardware
 from utilities.return_msg_generator import generate_return_msg
 
@@ -49,6 +49,8 @@ class DashboardCommands:
 
     def ResetRobot(self, args):
         """ResetRobot"""
+        _ = args  # for pylint waring
+        self.__dobot.set_robot_mode(robot_mode.MODE_ENABLE)
 
     def SpeedFactor(self, args):
         """SpeedFactor"""

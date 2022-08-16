@@ -6,8 +6,8 @@ import threading
 from logging import getLogger
 from typing import List
 
-import dobot_command.robot_mode as robot_mode
 import numpy as np
+from dobot_command import robot_mode
 from tcp_interface.realtime_packet import RealtimePacket
 from utilities.kinematics_mg400 import (forward_kinematics, inverse_kinematics,
                                         normalize_vec)
@@ -50,13 +50,15 @@ class DobotHardware:
         # TODO(m12watanabe1a): adjust value
         self.__global_speed_rate = 50  # 0-100
         self.__speed_j_max = 360  # [deg/s]
-        self.__speed_j_rate = 50  # 1-100
+        self.__speed_j_rate = 10  # 1-100
         self.__acc_j_max = 360  # [deg/s^2]
         self.__acc_j_rate = 50  # 1-100
         self.__speed_l_max = 1500  # [mm/s]
         self.__speed_l_rate = 50  # 1-100
         self.__acc_l_max = 1500  # [mm/s^2]
         self.__acc_l_rate = 50  # 1-100
+        self.__joint_jog_base_step = 5  # [deg]
+        self.__tool_jog_base_step = 5  # [deg]
         # end (adjust value)
         self.__update_speed_acc_params()
 
@@ -122,11 +124,6 @@ class DobotHardware:
         # TODO:implementing an algorithm for detecting collisions
         with self.__lock:
             return [None] * 6
-
-    def get_global_speed(self):
-        """get_global_speed"""
-        with self.__lock:
-            return copy.deepcopy(self.__global_speed_rate)
 
     def get_robot_mode(self):
         """get_robot_mode"""
@@ -227,7 +224,27 @@ class DobotHardware:
 
     def log_info_msg(self, text):
         """log_info_msg"""
+        with self.__lock:
+            self.__log_info_msg(text)
+
+    def __log_info_msg(self, text):
         self.__logger.info("%s: %s", self.__count, text)
+
+    def log_debug_msg(self, text):
+        """log_debug_msg"""
+        with self.__lock:
+            self.__log_debug_msg(text)
+
+    def __log_debug_msg(self, text):
+        self.__logger.debug("%s: %s", self.__count, text)
+
+    def log_warning_msg(self, text):
+        """log_warning_msg"""
+        with self.__lock:
+            self.__log_warning_msg(text)
+
+    def __log_warning_msg(self, text):
+        self.__logger.warning("%s: %s", self.__count, text)
 
     def __move_time(self, pos_init, pos_target, acc, v_l, v_s):
         dist = np.abs(pos_target - pos_init)
@@ -324,17 +341,59 @@ class DobotHardware:
             self.__q_target = self.__q_target_set[-1]
             return True
 
+    def generate_jog_target(self, axis_id):
+        """ generate_jog_target"""
+        with self.__lock:
+            solved = False
+            tool_step = \
+                self.__tool_jog_base_step * self.__global_speed_rate * 0.01
+            angle_step = \
+                self.__joint_jog_base_step * self.__global_speed_rate * 0.01
+
+            options_joint = ["j1+", "j1-", "j2+", "j2-", "j3+",
+                             "j3-", "j4+", "j4-", "j5+", "j5-", "j6+", "j6-"]
+            if axis_id in options_joint:
+                angles = self.__q_actual
+                index = sum(divmod(options_joint.index(axis_id)+1, 2))-1
+                if axis_id[-1] == "+":
+                    angles[index] += angle_step
+                else:
+                    angles[index] -= angle_step
+                solved, tool_vec = forward_kinematics(angles)
+
+            options_tool = ["x+", "x-", "y+", "y-", "z+",
+                            "z-", "rx+", "rx-", "ry+", "ry-", "rz+", "rz-"]
+            if axis_id in options_tool:
+                tool_vec = self.__tool_vector_actual
+                index = sum(divmod(options_tool.index(axis_id)+1, 2))-1
+                step = tool_step if index in [0, 1, 2] else angle_step
+                if axis_id[-1] == "+":
+                    tool_vec[index] += step
+                else:
+                    tool_vec[index] -= step
+                solved, angles = inverse_kinematics(tool_vec)
+
+            if solved:
+                self.__tool_vector_target = tool_vec
+                self.__q_target = angles
+                return True
+            return False
+
     def __q_controller(self):
-        # TODO: implement a controller with non-zero accelerations
-        if self.__robot_mode in [robot_mode.MODE_RUNNING, robot_mode.MODE_JOG]:
+        if self.__robot_mode is robot_mode.MODE_RUNNING:
             self.__q_actual = self.__q_target_set[self.__time_index]
-            self.log_info_msg(f"index: {self.__time_index}")
+            self.__log_info_msg(f"index: {self.__time_index}")
             self.__time_index += 1
             if self.__time_index >= len(self.__q_target_set):
                 self.__robot_mode = robot_mode.MODE_ENABLE
                 self.__time_index = 0
                 self.__count += 1
-                self.log_info_msg(f"{self.__count}: finish.")
+                self.__log_info_msg(f"{self.__count}: running finish.")
+
+        if self.__robot_mode is robot_mode.MODE_JOG:
+            self.__q_actual = self.__q_target
+            self.__robot_mode = robot_mode.MODE_ENABLE
+            self.__log_info_msg(f"{self.__count}: jog finish.")
 
     def __update_actual_status(self):
         solved, tool_vec = forward_kinematics(self.__q_actual)
