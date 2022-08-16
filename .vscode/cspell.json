@@ -11,6 +11,7 @@
     "imshow",
     "indv",
     "intrpt",
+    "levelname",
     "linalg",
     "linewidth",
     "linspace",

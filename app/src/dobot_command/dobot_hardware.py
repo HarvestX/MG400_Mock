@@ -1,5 +1,4 @@
 """Dobot Hardware."""
-
 import copy
 import logging
 import threading
@@ -71,12 +70,20 @@ class DobotHardware:
         self.__status = RealtimePacket()
         self.__lock = threading.Lock()
 
-        logging.basicConfig(filename='test_MovJ.log', level=logging.INFO)
-        self.__logger = getLogger("test_MovJ")
         self.__q_target_set: List[np.ndarray] = []
         self.__tool_vector_target_set: List[np.ndarray] = []
         self.__time_index = 0
         self.__timestep = 8.0 / 1000
+
+        self.__logger = getLogger(__name__)
+        self.__logger.setLevel(logging.INFO)
+        handler = logging.FileHandler('./log/dobot_hardware.log')
+        handler.setLevel(logging.INFO)
+        formatter = logging.Formatter(
+            '%(levelname)s  %(asctime)s  [%(name)s] %(message)s')
+        handler.setFormatter(formatter)
+        self.__logger.addHandler(handler)
+        self.log_info_msg("initiate dobot hardware.")
 
     def __pack_status(self):
         self.__status.write("digital_inputs", self.__digital_inputs)
@@ -232,7 +239,7 @@ class DobotHardware:
             self.__log_info_msg(text)
 
     def __log_info_msg(self, text):
-        self.__logger.info("%s: %s", self.__time_index, text)
+        self.__logger.info(text)
 
     def log_debug_msg(self, text):
         """log_debug_msg"""
@@ -240,7 +247,7 @@ class DobotHardware:
             self.__log_debug_msg(text)
 
     def __log_debug_msg(self, text):
-        self.__logger.debug("%s: %s", self.__time_index, text)
+        self.__logger.debug(text)
 
     def log_warning_msg(self, text):
         """log_warning_msg"""
@@ -248,7 +255,7 @@ class DobotHardware:
             self.__log_warning_msg(text)
 
     def __log_warning_msg(self, text):
-        self.__logger.warning("%s: %s", self.__time_index, text)
+        self.__logger.warning(text)
 
     def __move_time(self, pos_init, pos_target, acc, v_l, v_s):
         dist = np.abs(pos_target - pos_init)
@@ -402,12 +409,13 @@ class DobotHardware:
             if self.__time_index >= len(self.__q_target_set):
                 self.__robot_mode = robot_mode.MODE_ENABLE
                 self.__time_index = 0
-                self.__log_info_msg("running finish.")
+                self.__log_info_msg(
+                    "The robot has reached the target position.")
 
         if self.__robot_mode is robot_mode.MODE_JOG:
             self.__q_actual = self.__q_target
             self.__robot_mode = robot_mode.MODE_ENABLE
-            self.__log_info_msg("jog finish.")
+            self.__log_info_msg("The Jog task is finished.")
 
     def __update_actual_status(self):
         solved, tool_vec = forward_kinematics(self.__q_actual)

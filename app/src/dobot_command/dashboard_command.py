@@ -54,15 +54,30 @@ class DashboardCommands:
 
     def SpeedFactor(self, args):
         """SpeedFactor"""
+        _ = args  # for pylint waring
+        self.__dobot.log_warning_msg(
+            "The SpeedFactor command has not yet been implemented.")
 
     def AccJ(self, args):
         """AccJ"""
+        _ = args  # for pylint waring
+        self.__dobot.log_warning_msg(
+            "The AccJ command has not yet been implemented.")
 
     def AccL(self, args):
         """AccL"""
+        _ = args  # for pylint waring
+        self.__dobot.log_warning_msg(
+            "The AccL command has not yet been implemented.")
 
     def SpeedJ(self, args):
         """SpeedJ"""
+        _ = args  # for pylint waring
+        self.__dobot.log_warning_msg(
+            "The SpeedJ command has not yet been implemented.")
 
     def SpeedL(self, args):
         """SpeedL"""
+        _ = args  # for pylint waring
+        self.__dobot.log_warning_msg(
+            "The SpeedL command has not yet been implemented.")
