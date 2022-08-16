@@ -50,7 +50,7 @@ class DobotHardware:
         # TODO(m12watanabe1a): adjust value
         self.__global_speed_rate = 50  # 0-100
         self.__speed_j_max = 360  # [deg/s]
-        self.__speed_j_rate = 10  # 1-100
+        self.__speed_j_rate = 50  # 1-100
         self.__acc_j_max = 360  # [deg/s^2]
         self.__acc_j_rate = 50  # 1-100
         self.__speed_l_max = 1500  # [mm/s]
@@ -73,7 +73,6 @@ class DobotHardware:
 
         logging.basicConfig(filename='test_MovJ.log', level=logging.INFO)
         self.__logger = getLogger("test_MovJ")
-        self.__count = 0
         self.__q_target_set: List[np.ndarray] = []
         self.__tool_vector_target_set: List[np.ndarray] = []
         self.__time_index = 0
@@ -124,6 +123,11 @@ class DobotHardware:
         # TODO:implementing an algorithm for detecting collisions
         with self.__lock:
             return [None] * 6
+
+    def get_timestep(self):
+        """get_timestep"""
+        with self.__lock:
+            return copy.deepcopy(self.__timestep)
 
     def get_robot_mode(self):
         """get_robot_mode"""
@@ -228,7 +232,7 @@ class DobotHardware:
             self.__log_info_msg(text)
 
     def __log_info_msg(self, text):
-        self.__logger.info("%s: %s", self.__count, text)
+        self.__logger.info("%s: %s", self.__time_index, text)
 
     def log_debug_msg(self, text):
         """log_debug_msg"""
@@ -236,7 +240,7 @@ class DobotHardware:
             self.__log_debug_msg(text)
 
     def __log_debug_msg(self, text):
-        self.__logger.debug("%s: %s", self.__count, text)
+        self.__logger.debug("%s: %s", self.__time_index, text)
 
     def log_warning_msg(self, text):
         """log_warning_msg"""
@@ -244,7 +248,7 @@ class DobotHardware:
             self.__log_warning_msg(text)
 
     def __log_warning_msg(self, text):
-        self.__logger.warning("%s: %s", self.__count, text)
+        self.__logger.warning("%s: %s", self.__time_index, text)
 
     def __move_time(self, pos_init, pos_target, acc, v_l, v_s):
         dist = np.abs(pos_target - pos_init)
@@ -387,13 +391,12 @@ class DobotHardware:
             if self.__time_index >= len(self.__q_target_set):
                 self.__robot_mode = robot_mode.MODE_ENABLE
                 self.__time_index = 0
-                self.__count += 1
-                self.__log_info_msg(f"{self.__count}: running finish.")
+                self.__log_info_msg(f"running finish.")
 
         if self.__robot_mode is robot_mode.MODE_JOG:
             self.__q_actual = self.__q_target
             self.__robot_mode = robot_mode.MODE_ENABLE
-            self.__log_info_msg(f"{self.__count}: jog finish.")
+            self.__log_info_msg(f"jog finish.")
 
     def __update_actual_status(self):
         solved, tool_vec = forward_kinematics(self.__q_actual)

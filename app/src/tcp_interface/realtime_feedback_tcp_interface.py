@@ -13,7 +13,6 @@ from .tcp_interface_base import TcpInterfaceBase
 class RealtimeFeedbackTcpInterface(TcpInterfaceBase):
     """RealtimeFeedbackTcpInterface"""
     logger: logging.Logger
-    __realtime_feedback_period: float = 8.0 / 1000
     __socket_pool: Queue
 
     def __init__(self, ip: str, port: int, dobot: DobotHardware) -> None:
@@ -22,6 +21,7 @@ class RealtimeFeedbackTcpInterface(TcpInterfaceBase):
         self.logger = logging.getLogger("RealtimeFeedback Tcp Interface")
         self.__socket_pool = Queue()
         self.__dobot = dobot
+        self.__realtime_feedback_period: float = self.__dobot.get_timestep()
 
     def callback(self, socket, max_receive_bytes):
         while True:
