@@ -1,6 +1,6 @@
 """Dobot DashBoard Commands."""
 
-import dobot_command.robot_mode as robot_mode
+from dobot_command import robot_mode
 from dobot_command.dobot_hardware import DobotHardware
 from utilities.return_msg_generator import generate_return_msg
 
@@ -46,3 +46,38 @@ class DashboardCommands:
         collision_msg = collision_msg[:-1] + "]"
         error_id = self.__dobot.get_error_id()
         return generate_return_msg(error_id, [collision_msg])
+
+    def ResetRobot(self, args):
+        """ResetRobot"""
+        _ = args  # for pylint waring
+        self.__dobot.set_robot_mode(robot_mode.MODE_ENABLE)
+
+    def SpeedFactor(self, args):
+        """SpeedFactor"""
+        _ = args  # for pylint waring
+        self.__dobot.log_warning_msg(
+            "The SpeedFactor command has not yet been implemented.")
+
+    def AccJ(self, args):
+        """AccJ"""
+        _ = args  # for pylint waring
+        self.__dobot.log_warning_msg(
+            "The AccJ command has not yet been implemented.")
+
+    def AccL(self, args):
+        """AccL"""
+        _ = args  # for pylint waring
+        self.__dobot.log_warning_msg(
+            "The AccL command has not yet been implemented.")
+
+    def SpeedJ(self, args):
+        """SpeedJ"""
+        _ = args  # for pylint waring
+        self.__dobot.log_warning_msg(
+            "The SpeedJ command has not yet been implemented.")
+
+    def SpeedL(self, args):
+        """SpeedL"""
+        _ = args  # for pylint waring
+        self.__dobot.log_warning_msg(
+            "The SpeedL command has not yet been implemented.")

@@ -1,8 +1,7 @@
 """Dobot Motion Commands."""
 
-import dobot_command.robot_mode as robot_mode
+from dobot_command import robot_mode
 from dobot_command.dobot_hardware import DobotHardware
-from utilities.kinematics_mg400 import forward_kinematics, inverse_kinematics
 
 
 class MotionCommands:
@@ -15,61 +14,72 @@ class MotionCommands:
         """MovJ"""
         # TODO: to be acceptable optional args.
         if self.__dobot.get_robot_mode() is not robot_mode.MODE_ENABLE:
+            self.__dobot.log_warning_msg("The robot mode is not enable.")
+            return False
+        if len(args) < 6:
+            self.__dobot.log_warning_msg("The number of arguments is invalid.")
             return False
 
-        if len(args) < 6:
-            return False
-        tool_vec = list(map(float, args[0:6]))
-        solved, angles = inverse_kinematics(tool_vec)
-        if solved:
+        tool_target = list(map(float, args[0:6]))
+        self.__dobot.set_tool_vector_target(tool_target)
+        self.__dobot.register_init_status()
+        accepted = self.__dobot.generate_target_in_joint()
+        if accepted:
             self.__dobot.set_robot_mode(robot_mode.MODE_RUNNING)
-            self.__dobot.set_tool_vector_target(tool_vec)
-            self.__dobot.set_q_target(angles)
-            self.__dobot.set_qd_target([5]*6)
+            self.__dobot.reset_time_index()
+            self.__dobot.log_info_msg("The dobot accepts MovJ command.")
             return True
-        # return False
+
+        self.__dobot.log_warning_msg("out of range.")
+        return False
 
     def MoveJog(self, args):
         """MoveJog"""
         # TODO: to be acceptable optional args.
         if self.__dobot.get_robot_mode() is not robot_mode.MODE_ENABLE:
+            self.__dobot.log_warning_msg("The robot mode is not enable.")
             return False
-
         if len(args) < 1:
+            self.__dobot.log_warning_msg("The number of arguments is invalid.")
             return False
+
         axis_id = args[0]
-        angle_step = 1
-        pos_step = 1
-        solved = False
+        accepted = self.__dobot.generate_jog_target(axis_id)
 
-        options_joint = ["j1+", "j1-", "j2+", "j2-", "j3+",
-                         "j3-", "j4+", "j4-", "j5+", "j5-", "j6+", "j6-"]
-        if axis_id in options_joint:
-            angles = self.__dobot.get_q_actual()
-            index = sum(divmod(options_joint.index(axis_id)+1, 2))-1
-            if axis_id[-1] == "+":
-                angles[index] += angle_step
-            else:
-                angles[index] -= angle_step
-            solved, tool_vec = forward_kinematics(angles)
-
-        options_tool = ["x+", "x-", "y+", "y-", "z+",
-                        "z-", "rx+", "rx-", "ry+", "ry-", "rz+", "rz-"]
-        if axis_id in options_tool:
-            tool_vec = self.__dobot.get_tool_vector_actual()
-            index = sum(divmod(options_tool.index(axis_id)+1, 2))-1
-            step = pos_step if index in [0, 1, 2] else angle_step
-            if axis_id[-1] == "+":
-                tool_vec[index] += step
-            else:
-                tool_vec[index] -= step
-            solved, angles = inverse_kinematics(tool_vec)
-
-        if solved:
+        if accepted:
             self.__dobot.set_robot_mode(robot_mode.MODE_JOG)
-            self.__dobot.set_tool_vector_target(tool_vec)
-            self.__dobot.set_q_target(angles)
-            self.__dobot.set_qd_target([5]*6)
+            self.__dobot.register_init_status()
+            self.__dobot.log_info_msg("The dobot accepts MoveJog command.")
             return True
 
+        self.__dobot.log_info_msg("out of range.")
         return False
+
+    def MovL(self, args):
+        """MovL"""
+        # TODO: to be acceptable optional args.
+        if self.__dobot.get_robot_mode() is not robot_mode.MODE_ENABLE:
+            self.__dobot.log_warning_msg("The robot mode is not enable.")
+            return False
+        if len(args) < 6:
+            self.__dobot.log_warning_msg("The number of arguments is invalid.")
+            return False
+        tool_target = list(map(float, args[0:6]))
+
+        self.__dobot.set_tool_vector_target(tool_target)
+        self.__dobot.register_init_status()
+        accepted = self.__dobot.generate_target_in_tool()
+        if accepted:
+            self.__dobot.set_robot_mode(robot_mode.MODE_RUNNING)
+            self.__dobot.reset_time_index()
+            self.__dobot.log_info_msg("The dobot accepts MovL command.")
+            return True
+
+        self.__dobot.log_info_msg("The straight path is not feasible.")
+        return False
+
+    def JointMovJ(self, args):
+        """JointMovJ"""
+        _ = args  # for pylint waring
+        self.__dobot.log_warning_msg(
+            "The JointMovJ command has not yet been implemented.")

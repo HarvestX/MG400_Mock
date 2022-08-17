@@ -9,5 +9,8 @@
     },
     "python.linting.pylintArgs": [
         "--rcfile=${workspaceFolder}/.vscode/.pylintrc"
+    ],
+    "python.linting.flake8Args": [
+        "--max-line-length=88",
     ]
 }
