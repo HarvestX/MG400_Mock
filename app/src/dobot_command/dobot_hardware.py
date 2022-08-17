@@ -2,7 +2,6 @@
 import copy
 import logging
 import threading
-from logging import getLogger
 from typing import List
 
 import numpy as np
@@ -75,7 +74,7 @@ class DobotHardware:
         self.__time_index = 0
         self.__timestep = 8.0 / 1000
 
-        self.__logger = getLogger(__name__)
+        self.__logger = logging.getLogger(__name__)
         self.__logger.setLevel(logging.INFO)
         handler = logging.FileHandler('./log/dobot_hardware.log')
         handler.setLevel(logging.INFO)
