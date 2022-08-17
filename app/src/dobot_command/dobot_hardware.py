@@ -123,7 +123,7 @@ class DobotHardware:
                 Other numbers indicate that the dobot has some errors.
         """
         with self.__lock:
-            return copy.deepcopy(self.__error_id)
+            return np.int64(copy.deepcopy(self.__error_id))
 
     def get_collision_status(self):
         """get_collision_status"""
