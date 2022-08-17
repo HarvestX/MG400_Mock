@@ -1,6 +1,7 @@
 """Dobot Hardware."""
 import copy
 import logging
+import os
 import threading
 from typing import List
 
@@ -74,9 +75,12 @@ class DobotHardware:
         self.__time_index = 0
         self.__timestep = 8.0 / 1000
 
+        log_dir = "./log/"
+        if not os.path.exists(log_dir):
+            os.mkdir(log_dir)
         self.__logger = logging.getLogger(__name__)
         self.__logger.setLevel(logging.INFO)
-        handler = logging.FileHandler('./log/dobot_hardware.log')
+        handler = logging.FileHandler(log_dir+"dobot_hardware.log")
         handler.setLevel(logging.INFO)
         formatter = logging.Formatter(
             '%(levelname)s  %(asctime)s  [%(name)s] %(message)s')
