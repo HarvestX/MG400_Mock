@@ -1,13 +1,18 @@
 # MG400_Mock
+
 Dobot MG400 Mock Server Package.
 
-## installation 
+![Image](media/mg400_mock.gif)
+
+## installation
+
 ```console
-$ cd MG400_Mock 
-$ make
+cd MG400_Mock
+make
 ```
 
-## shotdown
+## shutdown
+
 ```console
-$ make down
+make down
 ```
