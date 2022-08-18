@@ -176,6 +176,11 @@ class DobotHardware:
         self.__speed_l = self.__global_speed_rate * \
             self.__speed_l_max * self.__speed_l_rate * 0.01**2
 
+    def set_error_id(self, error_id: int):
+        """set_error_id"""
+        with self.__lock:
+            self.__error_id = error_id
+
     def set_robot_mode(self, mode: int):
         """set_robot_mode"""
         with self.__lock:
@@ -189,7 +194,13 @@ class DobotHardware:
     def set_qd_target(self, qd_target: List[float]):
         """set_qd_target"""
         with self.__lock:
-            self.__qd_target = np.array(qd_target)
+            solved, tool_vec = forward_kinematics(np.array(qd_target))
+            if solved:
+                self.__qd_target = np.array(qd_target)
+                self.__tool_vector_target = tool_vec
+                return True
+            else:
+                return False
 
     def set_qdd_target(self, qdd_target: List[float]):
         """set_qdd_target"""
@@ -199,7 +210,13 @@ class DobotHardware:
     def set_tool_vector_target(self, tool_vector_target: List[float]):
         """set_tool_vector_target"""
         with self.__lock:
-            self.__tool_vector_target = np.array(tool_vector_target)
+            solved, angles = inverse_kinematics(np.array(tool_vector_target))
+            if solved:
+                self.__tool_vector_target = np.array(tool_vector_target)
+                self.__q_target = angles
+                return True
+            else:
+                return False
 
     def set_TCP_speed_target(self, TCP_speed_target: List[float]):
         """set_TCP_speed_target"""
@@ -212,25 +229,25 @@ class DobotHardware:
             self.__global_speed_rate = global_speed_rate
             self.__update_speed_acc_params()
 
-    def set_speed_j(self, speed_j: int):
+    def set_speed_j_rate(self, speed_j: int):
         """set_speed_j"""
         with self.__lock:
             self.__speed_j_rate = speed_j
             self.__update_speed_acc_params()
 
-    def set_speed_l(self, speed_l: int):
+    def set_speed_l_rate(self, speed_l: int):
         """set_speed_l"""
         with self.__lock:
             self.__speed_l_rate = speed_l
             self.__update_speed_acc_params()
 
-    def set_acc_j(self, acc_j: int):
+    def set_acc_j_rate(self, acc_j: int):
         """set_acc_j"""
         with self.__lock:
             self.__acc_j_rate = acc_j
             self.__update_speed_acc_params()
 
-    def set_acc_l(self, acc_l: int):
+    def set_acc_l_rate(self, acc_l: int):
         """set_acc_l"""
         with self.__lock:
             self.__acc_l_rate = acc_l
@@ -298,12 +315,6 @@ class DobotHardware:
     def generate_target_in_joint(self):
         """generate_joint_target"""
         with self.__lock:
-            solved, angles = inverse_kinematics(self.__tool_vector_target)
-            if solved:
-                self.__q_target = angles
-            else:
-                return False
-
             q_trajs = []
             len_max = 0
             for q_init, q_target, qd_s in \
@@ -364,7 +375,6 @@ class DobotHardware:
                     self.__q_target_set.append(angles)
                 else:
                     return False
-            self.__q_target = self.__q_target_set[-1]
             return True
 
     def generate_jog_target(self, axis_id):

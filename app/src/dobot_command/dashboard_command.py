@@ -11,6 +11,30 @@ class DashboardCommands:
     def __init__(self, dobot: DobotHardware) -> None:
         self.__dobot = dobot
 
+    def __error_msg(self, error_id, smg):
+        self.__dobot.set_error_id(error_id)
+        self.__dobot.log_warning_msg(smg)
+        return generate_return_msg(error_id)
+
+    def __single_int_command(self, args, v_min, v_max, set_func):
+        if len(args) < 1:
+            return self.__error_msg(
+                -20000, "The number of arguments is invalid.")
+
+        try:
+            value = int(args[0])
+        except ValueError:
+            return self.__error_msg(
+                -30001, "The first parameter type is invalid.")
+
+        if not v_min <= value <= v_max:
+            return self.__error_msg(
+                -40001, "The first parameter has an incorrect range.")
+
+        set_func(value)
+        error_id = self.__dobot.get_error_id()
+        return generate_return_msg(error_id)
+
     def EnableRobot(self, args) -> str:
         """EnableRobot"""
         # TODO: to be acceptable optional args.
@@ -51,33 +75,25 @@ class DashboardCommands:
         """ResetRobot"""
         _ = args  # for pylint waring
         self.__dobot.set_robot_mode(robot_mode.MODE_ENABLE)
+        error_id = self.__dobot.get_error_id()
+        return generate_return_msg(error_id)
 
     def SpeedFactor(self, args):
         """SpeedFactor"""
-        _ = args  # for pylint waring
-        self.__dobot.log_warning_msg(
-            "The SpeedFactor command has not yet been implemented.")
+        return self.__single_int_command(args, 0, 100, self.__dobot.set_speed_factor)
 
     def AccJ(self, args):
         """AccJ"""
-        _ = args  # for pylint waring
-        self.__dobot.log_warning_msg(
-            "The AccJ command has not yet been implemented.")
+        return self.__single_int_command(args, 1, 100, self.__dobot.set_acc_j_rate)
 
     def AccL(self, args):
         """AccL"""
-        _ = args  # for pylint waring
-        self.__dobot.log_warning_msg(
-            "The AccL command has not yet been implemented.")
+        return self.__single_int_command(args, 1, 100, self.__dobot.set_acc_l_rate)
 
     def SpeedJ(self, args):
         """SpeedJ"""
-        _ = args  # for pylint waring
-        self.__dobot.log_warning_msg(
-            "The SpeedJ command has not yet been implemented.")
+        return self.__single_int_command(args, 1, 100, self.__dobot.set_speed_j_rate)
 
     def SpeedL(self, args):
         """SpeedL"""
-        _ = args  # for pylint waring
-        self.__dobot.log_warning_msg(
-            "The SpeedL command has not yet been implemented.")
+        return self.__single_int_command(args, 1, 100, self.__dobot.set_speed_l_rate)
