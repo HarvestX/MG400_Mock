@@ -189,18 +189,18 @@ class DobotHardware:
     def set_q_target(self, q_target: List[float]):
         """set_q_target"""
         with self.__lock:
-            self.__q_target = np.array(q_target)
+            solved, tool_vex = forward_kinematics(np.array(q_target))
+            if solved:
+                self.__tool_vector_target = tool_vex
+                self.__q_target = np.array(q_target)
+                return True
+            else:
+                return False
 
     def set_qd_target(self, qd_target: List[float]):
         """set_qd_target"""
         with self.__lock:
-            solved, tool_vec = forward_kinematics(np.array(qd_target))
-            if solved:
-                self.__qd_target = np.array(qd_target)
-                self.__tool_vector_target = tool_vec
-                return True
-            else:
-                return False
+            self.__qd_target = np.array(qd_target)
 
     def set_qdd_target(self, qdd_target: List[float]):
         """set_qdd_target"""
