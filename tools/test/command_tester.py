@@ -24,9 +24,10 @@ EPS = 1
 
 CMD_TYPE = "MovJ"
 
-ratio = 10
+RATIO = 10
 SPEED_FACTOR = \
-    f"ros2 service call /mg400/speed_factor mg400_msgs/srv/SpeedFactor '{{ratio: {ratio}}}'"
+    f"ros2 service call /mg400/speed_factor \
+        mg400_msgs/srv/SpeedFactor '{{ratio: {RATIO}}}'"
 print(SPEED_FACTOR)
 proc = subprocess.run(SPEED_FACTOR, shell=True, check=True)
 
