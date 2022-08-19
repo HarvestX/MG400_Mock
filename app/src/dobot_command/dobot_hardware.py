@@ -98,7 +98,7 @@ class DobotHardware:
 
     def motion_unstack(self):
         """motion_unstack"""
-        if self.__robot_mode is not robot_mode.MODE_ENABLE:
+        if self.__robot_mode in [robot_mode.MODE_RUNNING, robot_mode.MODE_JOG]:
             return True, None
         if self.__motion_que.empty():
             return True, None
