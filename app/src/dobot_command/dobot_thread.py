@@ -15,7 +15,7 @@ class DobotThread(threading.Thread):
 
     def __init__(self, dobot: DobotHardware) -> None:
         super(DobotThread, self).__init__()
-        self.logger = logging.getLogger("Dobot Thread")
+        self.logger = logging.getLogger("Dobot_Thread")
         self.__dobot = dobot
         self.__motion_commands = MotionCommands(dobot)
         self.__timestep = self.__dobot.get_timestep()
