@@ -76,7 +76,7 @@ class DobotHardware:
         self.__time_index = 0
         self.__timestep = 8.0 / 1000
 
-        self.__que: Queue = Queue()
+        self.__motion_que: Queue = Queue()
 
         log_dir = "./log/"
         if not os.path.exists(log_dir):
@@ -91,14 +91,15 @@ class DobotHardware:
         self.__logger.addHandler(handler)
         self.log_info_msg("initiate dobot hardware.")
 
-    def command_stack(self, command: str):
-        """command_stack"""
-        self.__que.put(command)
+    def motion_stack(self, command: str):
+        """motion_stack"""
+        self.__motion_que.put(command)
 
-    def test_func(self):
-        """test_func"""
-        with self.__lock:
-            self.__log_info_msg(str(self.__q_actual))
+    def motion_unstack(self):
+        """motion_unstack"""
+        if self.__motion_que.empty():
+            return True, None
+        return False, self.__motion_que.get(block=False)
 
     def __pack_status(self):
         self.__status.write("digital_inputs", self.__digital_inputs)
@@ -460,8 +461,6 @@ class DobotHardware:
         with self.__lock:
             self.__q_controller()
             self.__update_actual_status()
-            # self.__pack_status()
-            # return self.__status.packet()
 
     def clear_error(self):
         """clear_error"""
