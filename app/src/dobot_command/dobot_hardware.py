@@ -74,7 +74,8 @@ class DobotHardware:
         self.__q_target_set: List[np.ndarray] = []
         self.__tool_vector_target_set: List[np.ndarray] = []
         self.__time_index = 0
-        self.__timestep = 8.0 / 1000
+        self.__timestep = 5.0 / 1000
+        self.__feedback_time = 8.0 / 1000
 
         self.__motion_que: Queue = Queue()
 
@@ -153,6 +154,11 @@ class DobotHardware:
         """get_timestep"""
         with self.__lock:
             return copy.deepcopy(self.__timestep)
+
+    def get_feedback_time(self):
+        """get_feedback_time"""
+        with self.__lock:
+            return copy.deepcopy(self.__feedback_time)
 
     def get_robot_mode(self):
         """get_robot_mode"""
