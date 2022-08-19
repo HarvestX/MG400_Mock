@@ -21,6 +21,7 @@ class MotionTcpInterface(TcpInterfaceBase):
         self.logger = logging.getLogger("Motion Tcp Interface")
         self.__socket_pool = Queue()
         self.__motion_commands = MotionCommands(dobot)
+        self.__dobot = dobot
 
     def callback(self, socket, max_receive_bytes):
         while True:
