@@ -21,7 +21,8 @@ class RealtimeFeedbackTcpInterface(TcpInterfaceBase):
         self.logger = logging.getLogger("RealtimeFeedback Tcp Interface")
         self.__socket_pool = Queue()
         self.__dobot = dobot
-        self.__realtime_feedback_period: float = self.__dobot.get_timestep()
+        self.__realtime_feedback_period: float = \
+            self.__dobot.get_feedback_time()
 
     def callback(self, socket, max_receive_bytes):
         while True:
@@ -30,7 +31,7 @@ class RealtimeFeedbackTcpInterface(TcpInterfaceBase):
             with connection:
                 while True:
                     try:
-                        packet = self.__dobot.update_status()
+                        packet = self.__dobot.get_status()
                         connection.send(packet)
                     except SocketError:
                         connection.close()

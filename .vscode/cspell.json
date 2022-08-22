@@ -18,6 +18,7 @@
     "matplotlib",
     "mtrx",
     "ndarray",
+    "popleft",
     "pyplot",
     "sympy",
     "timestep",
