@@ -77,7 +77,7 @@ class DobotHardware:
         self.__timestep = 5.0 / 1000
         self.__feedback_time = 8.0 / 1000
 
-        self.__motion_que: Queue = Queue()
+        self.__motion_que: Queue = Queue()  # for motion command stack
 
         log_dir = "./log/"
         if not os.path.exists(log_dir):

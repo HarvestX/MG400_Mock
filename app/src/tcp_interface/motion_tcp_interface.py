@@ -4,7 +4,9 @@ import logging
 from queue import Queue
 
 from dobot_command.dobot_hardware import DobotHardware
+from dobot_command.motion_command import MotionCommands
 
+from .function_parser import FunctionParser
 from .tcp_interface_base import TcpInterfaceBase
 
 
@@ -18,7 +20,7 @@ class MotionTcpInterface(TcpInterfaceBase):
 
         self.logger = logging.getLogger("Motion Tcp Interface")
         self.__socket_pool = Queue()
-        self.__dobot = dobot
+        self.__motion_commands = MotionCommands(dobot)
 
     def callback(self, socket, max_receive_bytes):
         while True:
@@ -30,4 +32,8 @@ class MotionTcpInterface(TcpInterfaceBase):
                     if not recv:
                         break
                     self.logger.info(recv)
-                    self.__dobot.motion_stack(recv)
+
+                    try:
+                        FunctionParser.exec(self.__motion_commands, recv)
+                    except ValueError as err:
+                        self.logger.error(err)
