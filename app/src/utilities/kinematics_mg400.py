@@ -96,7 +96,7 @@ def inverse_kinematics(tool_vec):
     j_2 = -np.rad2deg(j_2)
     j_3_1 = -np.rad2deg(j_3_1)
     j_3 = j_2 + j_3_1
-    j_4 = np.rad2deg(Rz)
+    j_4 = Rz
     angles = [j_1, j_2, j_3, j_4, 0., 0.]
 
     if not in_working_space(angles):
