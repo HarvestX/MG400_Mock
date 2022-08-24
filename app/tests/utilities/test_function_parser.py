@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from unittest import TestCase, main
+
 from src.utilities.function_parser import FunctionParser
 
 

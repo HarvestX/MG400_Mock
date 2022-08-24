@@ -15,5 +15,6 @@
     ],
     "python.analysis.extraPaths": [
         "${workspaceFolder}/app"
-    ]
+    ],
+    "python.sortImports.args": ["-rc", "--atomic"],
 }

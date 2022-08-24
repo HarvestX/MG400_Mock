@@ -3,7 +3,7 @@ import logging
 import threading
 import time
 
-from tcp_interface.function_parser import FunctionParser
+from utilities.function_parser import FunctionParser
 
 from .dobot_hardware import DobotHardware
 from .motion_command import MotionCommands
