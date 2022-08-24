@@ -79,17 +79,7 @@ class DobotHardware:
 
         self.__motion_que: Queue = Queue()  # for motion command stack
 
-        log_dir = "./log/"
-        if not os.path.exists(log_dir):
-            os.mkdir(log_dir)
-        self.__logger = logging.getLogger(__name__)
-        self.__logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(log_dir+"dobot_hardware.log")
-        handler.setLevel(logging.INFO)
-        formatter = logging.Formatter(
-            '%(levelname)s  %(asctime)s  [%(name)s] %(message)s')
-        handler.setFormatter(formatter)
-        self.__logger.addHandler(handler)
+        self.__logger = logging.getLogger("Dobot Hardware")
         self.log_info_msg("initiate dobot hardware.")
 
     def motion_stack(self, command: str):
