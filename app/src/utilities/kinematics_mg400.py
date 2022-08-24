@@ -139,9 +139,9 @@ def jacobian_fk(angles):
     elm_32 = -len2*np.sin(j_2)
     elm_33 = -len3*np.cos(j_3)
 
-    jacobi = np.matrix([[elm_11, elm_12, elm_13],
-                        [elm_21, elm_22, elm_23],
-                        [elm_31, elm_32, elm_33]])
+    jacobi = np.array([[elm_11, elm_12, elm_13],
+                       [elm_21, elm_22, elm_23],
+                       [elm_31, elm_32, elm_33]])
     return jacobi
 
 
@@ -166,9 +166,9 @@ def jacobian_inv(angles):
     elm_32 = -np.sin(j_1)*np.sin(j_2)/denom3
     elm_33 = -np.cos(j_2)/denom3
 
-    jacobi_inv = np.matrix([[elm_11, elm_12, elm_13],
-                            [elm_21, elm_22, elm_23],
-                            [elm_31, elm_32, elm_33]])
+    jacobi_inv = np.array([[elm_11, elm_12, elm_13],
+                           [elm_21, elm_22, elm_23],
+                           [elm_31, elm_32, elm_33]])
     return jacobi_inv
 
 
