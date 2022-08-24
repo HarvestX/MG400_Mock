@@ -4,6 +4,7 @@ from queue import Queue
 
 from dobot_command.dobot_hardware import DobotHardware
 
+from .function_parser import FunctionParser
 from .tcp_interface_base import TcpInterfaceBase
 
 

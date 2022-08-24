@@ -5,7 +5,7 @@ import logging
 from dobot_command.dashboard_command import DashboardCommands
 from dobot_command.dobot_hardware import DobotHardware
 
-from .function_parser import FunctionParser
+from utilities.function_parser import FunctionParser
 from .tcp_interface_base import TcpInterfaceBase
 
 

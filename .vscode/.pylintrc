@@ -1,6 +1,6 @@
 [MASTER]
 
-init-hook='import sys; sys.path.append("./app/src/")'
+init-hook='import sys; sys.path.append("./app/"); sys.path.append("./app/src/")'
 
 [BASIC]
 

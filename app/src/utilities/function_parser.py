@@ -8,7 +8,7 @@ class FunctionParser:
     @staticmethod
     def exec(command_class, command: str):
         """exec"""
-        function_name = regex.match(r"\s*[a-zA-Z]+(?=(\s*\(.*\)))", command)
+        function_name = regex.match(r"\s*[a-zA-Z0-9_]+(?=(\s*\(.*\)))", command)
 
         if not function_name:
             raise ValueError("Invalid command: " + command)
