@@ -104,6 +104,34 @@ class TestKinematics(TestCase):
             solved_flag, _ = inverse_kinematics(tool_vec)
             self.assertFalse(solved_flag)
 
+    def test_fk_args_errors(self):
+        """forward kinematics test."""
+        angles = [0.]*5
+        with self.assertRaises(ValueError):
+            _, _ = forward_kinematics(angles)
+
+        angles = "1234"
+        with self.assertRaises(ValueError):
+            _, _ = forward_kinematics(angles)
+
+        angles = "123456"
+        with self.assertRaises(TypeError):
+            _, _ = forward_kinematics(angles)
+
+    def test_ik_args_errors(self):
+        """inverse kinematics test."""
+        tool_vec = [0.]*5
+        with self.assertRaises(ValueError):
+            _, _ = inverse_kinematics(tool_vec)
+
+        tool_vec = "1234"
+        with self.assertRaises(ValueError):
+            _, _ = forward_kinematics(tool_vec)
+
+        tool_vec = "123456"
+        with self.assertRaises(TypeError):
+            _, _ = forward_kinematics(tool_vec)
+
 
 if __name__ == '__main__':
     main()
