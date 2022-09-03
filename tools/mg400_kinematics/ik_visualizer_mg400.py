@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.widgets import Slider
 from PIL import Image
+from utils_visualizer import link_pos_2d
 
 # for relative import
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append('../../app/src/utilities/')
-kinematics_mg400 = importlib.import_module('kinematics_mg400')
-inverse_kinematics = kinematics_mg400.inverse_kinematics
-link_pos_2d = kinematics_mg400.link_pos_2d
+sys.path.append('../../app/src/')
+utilities = importlib.import_module('utilities')
+inverse_kinematics = utilities.kinematics_mg400.inverse_kinematics
 
 
 def init_fig():

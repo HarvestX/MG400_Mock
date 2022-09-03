@@ -7,17 +7,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.widgets import Slider
 from PIL import Image
+from utils_visualizer import link_pos_2d
 
 # for relative import
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append('../../app/src/utilities/')
-kinematics_mg400 = importlib.import_module('kinematics_mg400')
-forward_kinematics = kinematics_mg400.forward_kinematics
-link_pos_2d = kinematics_mg400.link_pos_2d
-J2_MAX = kinematics_mg400.J2_MAX
-J2_MIN = kinematics_mg400.J2_MIN
-J3_MAX = kinematics_mg400.J3_MAX
-J3_MIN = kinematics_mg400.J3_MIN
+sys.path.append('../../app/src/')
+utilities = importlib.import_module('utilities')
+J2_MAX = utilities.specification_mg400.J2_MAX
+J2_MIN = utilities.specification_mg400.J2_MIN
+J3_MAX = utilities.specification_mg400.J3_MAX
+J3_MIN = utilities.specification_mg400.J3_MIN
+forward_kinematics = utilities.kinematics_mg400.forward_kinematics
 
 
 def init_fig():

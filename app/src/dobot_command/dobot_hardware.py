@@ -22,8 +22,7 @@ from typing import List
 import numpy as np
 from dobot_command import robot_mode
 from tcp_interface.realtime_packet import RealtimePacket
-from utilities.kinematics_mg400 import (forward_kinematics, inverse_kinematics,
-                                        normalize_vec)
+from utilities.kinematics_mg400 import forward_kinematics, inverse_kinematics
 
 
 class DobotHardware:
@@ -94,6 +93,10 @@ class DobotHardware:
 
         self.__logger = logging.getLogger("Dobot Hardware")
         self.log_info_msg("initiate dobot hardware.")
+
+    def normalize_vec(self, vec):
+        """normalize_vec"""
+        return vec / np.linalg.norm(vec)
 
     def motion_stack(self, command: str):
         """motion_stack"""
@@ -370,7 +373,7 @@ class DobotHardware:
             vec_length = self.__generate_trapezoid(
                 0, dist, self.__acc_l, self.__speed_l, v_s, self.__timestep)
 
-            direction = normalize_vec(
+            direction = self.normalize_vec(
                 self.__tool_vector_target[0:3] - self.__tool_vector_init[0:3])
             pos_list = np.array(
                 [length * direction + self.__tool_vector_init[0:3]
