@@ -15,3 +15,9 @@
 
 from . import (kinematics_mg400, return_msg_generator, specification_mg400,
                statics_mg400)
+
+__all__ = [
+    "kinematics_mg400",
+    "return_msg_generator",
+    "specification_mg400",
+    "statics_mg400"]
