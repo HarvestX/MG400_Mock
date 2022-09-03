@@ -45,7 +45,7 @@ def forward_kinematics(angles):
     """forward_kinematics"""
 
     if not in_working_space(angles):
-        return False, np.array([0.]*6)
+        raise ValueError("outside of workspace.")
     j_1, j_2, j_3, j_4, _, _ = angles
     pos = LINK1 + \
         rot_y(LINK2, j_2) + \
@@ -54,7 +54,7 @@ def forward_kinematics(angles):
     p_x, p_y, p_z = rot_z(pos, j_1)
     Rz = j_4
     tool_vec = np.round([p_x, p_y, p_z, 0, 0, Rz], decimals=ROUND_DECIMALS)
-    return True, tool_vec
+    return tool_vec
 
 
 def inverse_kinematics(tool_vec):
@@ -69,7 +69,8 @@ def inverse_kinematics(tool_vec):
 
     val1 = (pp_x**2+pp_z**2-length2**2-length3**2) / (2*length2*length3)
     if val1 < -1 or val1 > 1:
-        return False, np.array([0.]*6)
+        # return False, np.array([0.]*6)
+        raise ValueError("outside of workspace.")
     j_3_1 = math.asin(val1)
 
     j_2 = math.atan2(pp_z, pp_x) -\
@@ -84,5 +85,6 @@ def inverse_kinematics(tool_vec):
     angles = np.round([j_1, j_2, j_3, j_4, 0., 0.], decimals=ROUND_DECIMALS)
 
     if not in_working_space(angles):
-        return False, np.array([0.]*6)
-    return True, np.array(angles)
+        # return False, np.array([0.]*6)
+        raise ValueError("outside of workspace.")
+    return np.array(angles)

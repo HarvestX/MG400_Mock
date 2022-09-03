@@ -57,16 +57,14 @@ class TestKinematics(TestCase):
     def test_fk_good(self):
         """forward kinematics test."""
         for test_input, exp_ret in zip(self.good_angles, self.good_tool_vec):
-            solved_flag, ret = forward_kinematics(test_input)
-            self.assertTrue(solved_flag)
+            ret = forward_kinematics(test_input)
             self.assertIsNone(assert_allclose(
                 ret, exp_ret, atol=10**-(ROUND_DECIMALS-1)))
 
     def test_ik_good(self):
         """inverse kinematics test."""
         for test_input, exp_ret in zip(self.good_tool_vec, self.good_angles):
-            solved_flag, ret = inverse_kinematics(test_input)
-            self.assertTrue(solved_flag)
+            ret = inverse_kinematics(test_input)
             self.assertIsNone(assert_allclose(
                 ret, exp_ret, atol=10**-(ROUND_DECIMALS-1)))
 
@@ -84,8 +82,8 @@ class TestKinematics(TestCase):
             [0., -25., 55., 0., 0., 0],
         ]
         for angles in angles_list:
-            solved_flag, _ = forward_kinematics(angles)
-            self.assertFalse(solved_flag)
+            with self.assertRaises(ValueError):
+                _ = forward_kinematics(angles)
 
     def test_ik_out_of_range(self):
         """inverse kinematics test."""
@@ -101,8 +99,8 @@ class TestKinematics(TestCase):
             [170., 0.0, 1.227986, 0.0, 0.0, 0.0],
         ]
         for tool_vec in tool_vec_list:
-            solved_flag, _ = inverse_kinematics(tool_vec)
-            self.assertFalse(solved_flag)
+            with self.assertRaises(ValueError):
+                _ = forward_kinematics(tool_vec)
 
     def test_fk_args_errors(self):
         """forward kinematics test."""
