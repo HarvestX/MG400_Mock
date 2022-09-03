@@ -10,16 +10,15 @@ import numpy as np
 
 # for relative import
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append('../../app/src/utilities/')
-kinematics_mg400 = importlib.import_module('kinematics_mg400')
-forward_kinematics = kinematics_mg400.forward_kinematics
-
-J1_MAX = kinematics_mg400.J1_MAX
-J1_MIN = kinematics_mg400.J1_MIN
-J2_MAX = kinematics_mg400.J2_MAX
-J2_MIN = kinematics_mg400.J2_MIN
-J3_MAX = kinematics_mg400.J3_MAX
-J3_MIN = kinematics_mg400.J3_MIN
+sys.path.append('../../app/src/')
+utilities = importlib.import_module('utilities')
+forward_kinematics = utilities.kinematics_mg400.forward_kinematics
+J1_MAX = utilities.kinematics_mg400.J1_MAX
+J1_MIN = utilities.kinematics_mg400.J1_MIN
+J2_MAX = utilities.kinematics_mg400.J2_MAX
+J2_MIN = utilities.kinematics_mg400.J2_MIN
+J3_MAX = utilities.kinematics_mg400.J3_MAX
+J3_MIN = utilities.kinematics_mg400.J3_MIN
 EPS = 1
 
 CMD_TYPE = "MovJ"
