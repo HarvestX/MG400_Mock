@@ -24,22 +24,74 @@ class TestFunctionParser(TestCase):
     """Test Function parser."""
 
     def fk_test_good(self):
-        """Handle acceptable value."""
-        angles_1 = [0]*6
-        exp_ret_1 = [0]*6
-        solved_flag, ret_1 = forward_kinematics(angles_1)
-        self.assertTrue(solved_flag)
-        self.assertIsNone(assert_allclose(
-            ret_1, exp_ret_1,  rtol=1e-5, atol=0))
+        """forward kinematics test."""
+        angles_list = [
+            [0]*6,
+            [0]*6,
+            [0]*6,
+            [0]*6,
+            [0]*6,
+        ]
+        exp_ret_list = [
+            [0]*6,
+            [0]*6,
+            [0]*6,
+            [0]*6,
+            [0]*6,
+        ]
+        for angles, exp_ret in zip(angles_list, exp_ret_list):
+            solved_flag, ret = forward_kinematics(angles)
+            self.assertTrue(solved_flag)
+            self.assertIsNone(assert_allclose(
+                ret, exp_ret,  rtol=1e-5, atol=0))
 
     def ik_test_good(self):
-        """Handle acceptable value."""
-        tool_vec_1 = [0]*6
-        exp_ret_1 = [0]*6
-        solved_flag, ret_1 = inverse_kinematics(tool_vec_1)
-        self.assertTrue(solved_flag)
-        self.assertIsNone(assert_allclose(
-            ret_1, exp_ret_1,  rtol=1e-5, atol=0))
+        """inverse kinematics test."""
+        tool_vec_list = [
+            [0]*6,
+            [0]*6,
+            [0]*6,
+            [0]*6,
+            [0]*6,
+        ]
+        exp_ret_list = [
+            [0]*6,
+            [0]*6,
+            [0]*6,
+            [0]*6,
+            [0]*6,
+        ]
+        for tool_vec, exp_ret in zip(tool_vec_list, exp_ret_list):
+            solved_flag, ret = inverse_kinematics(tool_vec)
+            self.assertTrue(solved_flag)
+            self.assertIsNone(assert_allclose(
+                ret, exp_ret,  rtol=1e-5, atol=0))
+
+    def fk_test_out_of_range(self):
+        """forward kinematics test."""
+        angles_list = [
+            [0]*6,
+            [0]*6,
+            [0]*6,
+            [0]*6,
+            [0]*6,
+        ]
+        for angles in angles_list:
+            solved_flag, _ = forward_kinematics(angles)
+            self.assertFalse(solved_flag)
+
+    def ik_test_out_of_range(self):
+        """inverse kinematics test."""
+        tool_vec_list = [
+            [0]*6,
+            [0]*6,
+            [0]*6,
+            [0]*6,
+            [0]*6,
+        ]
+        for tool_vec in tool_vec_list:
+            solved_flag, _ = inverse_kinematics(tool_vec)
+            self.assertFalse(solved_flag)
 
 
 if __name__ == '__main__':
