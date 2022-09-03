@@ -32,15 +32,18 @@ proc = subprocess.run(SPEED_FACTOR, shell=True, check=True)
 
 for _ in range(100):
 
-    SOLVED = False
-    while not SOLVED:
+    while True:
         j_1 = round(random.uniform(J1_MIN+EPS, J1_MAX-EPS), 3)
         j_2 = round(random.uniform(J2_MIN+EPS, J2_MAX-EPS), 3)
         j_3 = round(random.uniform(J3_MIN+EPS, J3_MAX-EPS), 3)
         j_4 = round(random.uniform(-180+EPS, 180-EPS), 3)
 
         angles = np.array([j_1, j_2, j_3, j_4, 0, 0])
-        SOLVED, tool_vec = forward_kinematics(angles)
+        try:
+            tool_vec = forward_kinematics(angles)
+            break
+        except ValueError:
+            continue
 
     xx = round(tool_vec[0]/1000, 3)
     yy = round(tool_vec[1]/1000, 3)
