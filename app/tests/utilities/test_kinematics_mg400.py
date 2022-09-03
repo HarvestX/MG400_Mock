@@ -16,7 +16,7 @@
 from unittest import TestCase, main
 
 from numpy.testing import assert_allclose
-from src.utilities.kinematics_mg400 import (forward_kinematics,
+from src.utilities.kinematics_mg400 import (ROUND_DECIMALS, forward_kinematics,
                                             inverse_kinematics)
 
 
@@ -53,7 +53,7 @@ class TestKinematics(TestCase):
             solved_flag, ret = forward_kinematics(angles)
             self.assertTrue(solved_flag)
             self.assertIsNone(assert_allclose(
-                ret, exp_ret, atol=1e-5))
+                ret, exp_ret, atol=10**(ROUND_DECIMALS-1)))
 
     def test_ik_good(self):
         """inverse kinematics test."""
@@ -85,7 +85,7 @@ class TestKinematics(TestCase):
             solved_flag, ret = inverse_kinematics(tool_vec)
             self.assertTrue(solved_flag)
             self.assertIsNone(assert_allclose(
-                ret, exp_ret, atol=1e-5))
+                ret, exp_ret, atol=10**(ROUND_DECIMALS-1)))
 
     # def test_fk_out_of_range(self):
     #     """forward kinematics test."""
