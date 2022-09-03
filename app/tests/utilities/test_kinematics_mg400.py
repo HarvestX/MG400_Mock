@@ -20,27 +20,38 @@ from src.utilities.kinematics_mg400 import (forward_kinematics,
                                             inverse_kinematics)
 
 
-class TestFunctionParser(TestCase):
-    """Test Function parser."""
+class TestKinematics(TestCase):
+    """Test Kinematics."""
 
     def fk_test_good(self):
         """forward kinematics test."""
         angles_list = [
-            [0]*6,
-            [0]*6,
-            [0]*6,
-            [0]*6,
-            [0]*6,
+            [0, 0, 0, 0, 0, 0],
+            [160, 0, 0, 0, 0, 0],
+            [-160, 0, 0, 0, 0, 0],
+            [0, -25, 25, 0, 0, 0],
+            [0, 35, -25, 0, 0, 0],
+            [0, 70, 15, 0, 0, 0],
+            [0, 85, 25, 0, 0, 0],
+            [0, 85, 105, 0, 0, 0],
+            [0, 45, 105, 0, 0, 0],
+            [0, -25, 50, 0, 0, 0],
         ]
         exp_ret_list = [
-            [0]*6,
-            [0]*6,
-            [0]*6,
-            [0]*6,
-            [0]*6,
+            [0, 0, 0, 0, 0, 0],
+            [160, 0, 0, 0, 0, 0],
+            [-160, 0, 0, 0, 0, 0],
+            [0, -25, 25, 0, 0, 0],
+            [0, 35, -25, 0, 0, 0],
+            [0, 70, 15, 0, 0, 0],
+            [0, 85, 25, 0, 0, 0],
+            [0, 85, 105, 0, 0, 0],
+            [0, 45, 105, 0, 0, 0],
+            [0, -25, 50, 0, 0, 0],
         ]
         for angles, exp_ret in zip(angles_list, exp_ret_list):
             solved_flag, ret = forward_kinematics(angles)
+            print(ret)
             self.assertTrue(solved_flag)
             self.assertIsNone(assert_allclose(
                 ret, exp_ret,  rtol=1e-5, atol=0))
