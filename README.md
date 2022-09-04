@@ -19,6 +19,7 @@ It can make more easy to develop MG400 control system with embeded IK solver.
 
 ## Launch
 ```console
+git clone git@github.com:HarvestX/MG400_Mock.git
 cd MG400_Mock
 make
 ```
@@ -33,7 +34,7 @@ make down
 
 ## Develop
 ### Running test
-```
+```console
 make test
 ```
 
