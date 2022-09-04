@@ -1,0 +1,17 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+      - ci-check
+
+jobs:
+  lint:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Running test
+        run: |
+          docker-compose -f docker/test-docker-compose.yml run test_dobot python3 -m unittest discover -s tests
