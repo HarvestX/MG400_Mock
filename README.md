@@ -1,3 +1,6 @@
+[![ci](https://github.com/HarvestX/MG400_Mock/actions/workflows/ci.yml/badge.svg)](https://github.com/HarvestX/MG400_Mock/actions/workflows/ci.yml)
+[![lint](https://github.com/HarvestX/MG400_Mock/actions/workflows/lint.yml/badge.svg)](https://github.com/HarvestX/MG400_Mock/actions/workflows/lint.yml)
+
 # MG400_Mock
 
 Dobot MG400 Mock Server Package.
