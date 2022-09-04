@@ -12,5 +12,9 @@
     ],
     "python.linting.flake8Args": [
         "--max-line-length=88",
-    ]
+    ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/app"
+    ],
+    "python.sortImports.args": ["-rc", "--atomic"],
 }

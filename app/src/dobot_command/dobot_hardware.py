@@ -1,7 +1,20 @@
 """Dobot Hardware."""
+# Copyright 2022 HarvestX Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import copy
 import logging
-import os
 import threading
 from queue import Queue
 from typing import List
@@ -9,14 +22,19 @@ from typing import List
 import numpy as np
 from dobot_command import robot_mode
 from tcp_interface.realtime_packet import RealtimePacket
-from utilities.kinematics_mg400 import (forward_kinematics, inverse_kinematics,
-                                        normalize_vec)
+from utilities.kinematics_mg400 import forward_kinematics, inverse_kinematics
 
 
 class DobotHardware:
     """DobotHardware"""
 
     def __init__(self) -> None:
+        self.__status = RealtimePacket()
+        self.__lock = threading.Lock()
+        self.__motion_que: Queue = Queue()  # for motion command stack
+        self.__logger = logging.getLogger("Dobot Hardware")
+        self.__log_info_msg("initiate dobot hardware.")
+
         self.__digital_inputs = 0
         self.__digital_outputs = 0
         self.__robot_mode = robot_mode.MODE_ENABLE
@@ -31,11 +49,11 @@ class DobotHardware:
         self.__qd_actual: np.ndarray = np.array([0] * 6)
         self.__i_actual: np.ndarray = np.array([0] * 6)
         self.__actual_i_TCP_force: np.ndarray = np.array([0] * 6)
-        solved, tool_vec = forward_kinematics(self.__q_actual)
-        if solved:
+        try:
+            tool_vec = forward_kinematics(self.__q_actual)
             self.__tool_vector_actual: np.ndarray = tool_vec
-        else:
-            raise ValueError("initial joint angles are invalid!")
+        except ValueError:
+            self. __log_info_msg("the init angle is outside of the workspace.")
         self.__TCP_speed_actual: np.ndarray = np.array([0] * 6)
         self.__TCP_force: np.ndarray = np.array([0] * 6)
         self.__tool_vector_target: np.ndarray = np.array([0] * 6)
@@ -62,35 +80,22 @@ class DobotHardware:
         # end (adjust value)
         self.__update_speed_acc_params()
 
+        # args for motion command
         self.__q_init = np.array([0] * 6)
         self.__tool_vector_init = np.array([0] * 6)
         self.__q_previous = self.__q_actual
         self.__tool_vector_previous = self.__tool_vector_actual
         self.__qd_init = np.array([0]*6)
         self.__TCP_speed_init = np.array([0]*6)
-        self.__status = RealtimePacket()
-        self.__lock = threading.Lock()
-
         self.__q_target_set: List[np.ndarray] = []
         self.__tool_vector_target_set: List[np.ndarray] = []
         self.__time_index = 0
         self.__timestep = 5.0 / 1000
         self.__feedback_time = 8.0 / 1000
 
-        self.__motion_que: Queue = Queue()  # for motion command stack
-
-        log_dir = "./log/"
-        if not os.path.exists(log_dir):
-            os.mkdir(log_dir)
-        self.__logger = logging.getLogger(__name__)
-        self.__logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(log_dir+"dobot_hardware.log")
-        handler.setLevel(logging.INFO)
-        formatter = logging.Formatter(
-            '%(levelname)s  %(asctime)s  [%(name)s] %(message)s')
-        handler.setFormatter(formatter)
-        self.__logger.addHandler(handler)
-        self.log_info_msg("initiate dobot hardware.")
+    def normalize_vec(self, vec):
+        """normalize_vec"""
+        return vec / np.linalg.norm(vec)
 
     def motion_stack(self, command: str):
         """motion_stack"""
@@ -210,12 +215,12 @@ class DobotHardware:
     def set_q_target(self, q_target: List[float]):
         """set_q_target"""
         with self.__lock:
-            solved, tool_vex = forward_kinematics(np.array(q_target))
-            if solved:
+            try:
+                tool_vex = forward_kinematics(np.array(q_target))
                 self.__tool_vector_target = tool_vex
                 self.__q_target = np.array(q_target)
                 return True
-            else:
+            except ValueError:
                 return False
 
     def set_qd_target(self, qd_target: List[float]):
@@ -231,12 +236,12 @@ class DobotHardware:
     def set_tool_vector_target(self, tool_vector_target: List[float]):
         """set_tool_vector_target"""
         with self.__lock:
-            solved, angles = inverse_kinematics(np.array(tool_vector_target))
-            if solved:
+            try:
+                angles = inverse_kinematics(np.array(tool_vector_target))
                 self.__tool_vector_target = np.array(tool_vector_target)
                 self.__q_target = angles
                 return True
-            else:
+            except ValueError:
                 return False
 
     def set_TCP_speed_target(self, TCP_speed_target: List[float]):
@@ -354,7 +359,7 @@ class DobotHardware:
 
             self.__tool_vector_target_set = []
             for q_target in self.__q_target_set:
-                _, tool_vec = forward_kinematics(q_target)
+                tool_vec = forward_kinematics(q_target)
                 self.__tool_vector_target_set.append(tool_vec)
             return True
 
@@ -367,7 +372,7 @@ class DobotHardware:
             vec_length = self.__generate_trapezoid(
                 0, dist, self.__acc_l, self.__speed_l, v_s, self.__timestep)
 
-            direction = normalize_vec(
+            direction = self.normalize_vec(
                 self.__tool_vector_target[0:3] - self.__tool_vector_init[0:3])
             pos_list = np.array(
                 [length * direction + self.__tool_vector_init[0:3]
@@ -390,18 +395,17 @@ class DobotHardware:
             self.__q_target_set = []
             for pos, r_z in zip(pos_list, r_z_traj):
                 pos = np.concatenate([pos, [0, 0, r_z]], 0)
-                solved, angles = inverse_kinematics(pos)
-                if solved:
+                try:
+                    angles = inverse_kinematics(pos)
                     self.__tool_vector_target_set.append(pos)
                     self.__q_target_set.append(angles)
-                else:
+                except ValueError:
                     return False
             return True
 
     def generate_jog_target(self, axis_id):
         """ generate_jog_target"""
         with self.__lock:
-            solved = False
             tool_step = \
                 self.__tool_jog_base_step * self.__global_speed_rate * 0.01
             angle_step = \
@@ -416,7 +420,10 @@ class DobotHardware:
                     angles[index] += angle_step
                 else:
                     angles[index] -= angle_step
-                solved, tool_vec = forward_kinematics(angles)
+                try:
+                    tool_vec = forward_kinematics(angles)
+                except ValueError:
+                    return False
 
             options_tool = ["x+", "x-", "y+", "y-", "z+",
                             "z-", "rx+", "rx-", "ry+", "ry-", "rz+", "rz-"]
@@ -428,13 +435,17 @@ class DobotHardware:
                     tool_vec[index] += step
                 else:
                     tool_vec[index] -= step
-                solved, angles = inverse_kinematics(tool_vec)
+                try:
+                    angles = inverse_kinematics(tool_vec)
+                except ValueError:
+                    return False
 
-            if solved:
+            try:
                 self.__tool_vector_target = tool_vec
                 self.__q_target = angles
                 return True
-            return False
+            except NameError:
+                return False
 
     def __q_controller(self):
         if self.__robot_mode is robot_mode.MODE_RUNNING:
@@ -452,9 +463,11 @@ class DobotHardware:
             self.__log_info_msg("The Jog task is finished.")
 
     def __update_actual_status(self):
-        solved, tool_vec = forward_kinematics(self.__q_actual)
-        if solved:
+        try:
+            tool_vec = forward_kinematics(self.__q_actual)
             self.__tool_vector_actual = tool_vec
+        except ValueError:
+            self.__log_info_msg("the actual angle is outside of workspace.")
 
         self.__qd_actual = (
             self.__q_actual - self.__q_previous) / self.__timestep
