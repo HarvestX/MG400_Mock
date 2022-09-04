@@ -12,6 +12,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
+      - name: Docker setup
+        run: |
+          docker-compose -f docker/test-docker-compose.yml build
       - name: Running test
         run: |
           docker-compose -f docker/test-docker-compose.yml run test_dobot python3 -m unittest discover -s tests
