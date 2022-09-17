@@ -220,7 +220,8 @@ class DobotHardware:
                 self.__tool_vector_target = tool_vex
                 self.__q_target = np.array(q_target)
                 return True
-            except ValueError:
+            except ValueError as err:
+                self.__logger.error(err)
                 return False
 
     def set_qd_target(self, qd_target: List[float]):
@@ -241,7 +242,8 @@ class DobotHardware:
                 self.__tool_vector_target = np.array(tool_vector_target)
                 self.__q_target = angles
                 return True
-            except ValueError:
+            except ValueError as err:
+                self.__logger.error(err)
                 return False
 
     def set_TCP_speed_target(self, TCP_speed_target: List[float]):
