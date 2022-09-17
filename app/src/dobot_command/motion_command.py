@@ -35,7 +35,7 @@ class MotionCommands:
 
         tool_target = list(map(float, args[0:6]))
         if not self.__dobot.set_tool_vector_target(tool_target):
-            self.__dobot.log_warning_msg("The number of arguments is invalid.")
+            self.__dobot.log_warning_msg("Failed to calculate path.")
             return False
 
         self.__dobot.register_init_status()
@@ -83,7 +83,7 @@ class MotionCommands:
         tool_target = list(map(float, args[0:6]))
 
         if not self.__dobot.set_tool_vector_target(tool_target):
-            self.__dobot.log_warning_msg("The number of arguments is invalid.")
+            self.__dobot.log_warning_msg("Failed to calculate path")
             return False
 
         self.__dobot.register_init_status()
