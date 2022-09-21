@@ -52,7 +52,7 @@ def forward_kinematics(angles):
         rot_y(LINK3, j_3) + LINK4
 
     p_x, p_y, p_z = rot_z(pos, j_1)
-    Rz = j_4
+    Rz = j_1 + j_4
     tool_vec = np.round([p_x, p_y, p_z, 0, 0, Rz], decimals=ROUND_DECIMALS)
     return tool_vec
 
@@ -80,7 +80,7 @@ def inverse_kinematics(tool_vec):
     j_2 = -np.rad2deg(j_2)
     j_3_1 = -np.rad2deg(j_3_1)
     j_3 = j_2 + j_3_1
-    j_4 = Rz
+    j_4 = Rz - j_1
     angles = np.round([j_1, j_2, j_3, j_4, 0., 0.], decimals=ROUND_DECIMALS)
 
     if not in_working_space(angles):
