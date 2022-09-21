@@ -37,11 +37,13 @@ class TestKinematics(TestCase):
             [0., -25., 35., 0., 0., 0],
             [0., 0., 0, 90., 0., 0],
             [0., 0., 0, -90., 0., 0],
+            [100., 0., 0, 90., 0., 0],
+            [-100., 0., 0, -90., 0., 0],
         ]
         self.good_tool_vec = [
             [284.0, 0.0, 118.0, 0.0, 0.0, 0.0],
-            [-266.872704, 97.133721, 118.0, 0.0, 0.0, 0.0],
-            [-266.872704, -97.133721, 118.0, 0.0, 0.0, 0.0],
+            [-266.872704, 97.133721, 118.0, 0.0, 0.0, 160.],
+            [-266.872704, -97.133721, 118.0, 0.0, 0.0, -160.],
             [193.645667, 0., 175.562059, 0., 0., 0.],
             [367.979739, 0.0, 160.309804, 0.0, 0.0, 0.0],
             [442.483228, 0.0, -42.439808, 0.0, 0.0, 0.0],
@@ -51,6 +53,8 @@ class TestKinematics(TestCase):
             [178.393412, 0.0, 1.227986, 0.0, 0.0, 0.0],
             [284.0, 0.0, 118.0, 0.0, 0.0, 90.0],
             [284.0, 0.0, 118.0, 0.0, 0.0, -90.0],
+            [-49.316082, 279.685402, 118., 0., 0., 190.],
+            [-49.316082, -279.685402, 118., 0., 0., -190.],
         ]
         return super().setUp()
 
@@ -80,6 +84,8 @@ class TestKinematics(TestCase):
             [0., 105., 105., 0., 0., 0],
             [0., 25., 105., 0., 0., 0],
             [0., -25., 55., 0., 0., 0],
+            [0., 0., 0., 200., 0., 0],
+            [0., 0., 0., -200., 0., 0],
         ]
         for angles in angles_list:
             with self.assertRaises(ValueError):
@@ -97,10 +103,12 @@ class TestKinematics(TestCase):
             [230., 0.0, -210.784765, 0.0, 0.0, 0.0],
             [180., 0.0, -102.293333, 0.0, 0.0, 0.0],
             [170., 0.0, 1.227986, 0.0, 0.0, 0.0],
+            [284.0, 0.0, 118.0, 0.0, 0.0, 200.0],
+            [284.0, 0.0, 118.0, 0.0, 0.0, -200.0],
         ]
         for tool_vec in tool_vec_list:
             with self.assertRaises(ValueError):
-                _ = forward_kinematics(tool_vec)
+                _ = inverse_kinematics(tool_vec)
 
     def test_fk_args_errors(self):
         """forward kinematics test."""
@@ -124,11 +132,11 @@ class TestKinematics(TestCase):
 
         tool_vec = "1234"
         with self.assertRaises(ValueError):
-            _, _ = forward_kinematics(tool_vec)
+            _, _ = inverse_kinematics(tool_vec)
 
         tool_vec = "123456"
         with self.assertRaises(TypeError):
-            _, _ = forward_kinematics(tool_vec)
+            _, _ = inverse_kinematics(tool_vec)
 
 
 if __name__ == '__main__':
