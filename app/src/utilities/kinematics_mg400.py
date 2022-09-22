@@ -1,5 +1,6 @@
 """kinematics for mg400"""
 import math
+from typing import List
 
 import numpy as np
 from numpy import linalg as LA
@@ -41,6 +42,28 @@ def rot_z(vec, angle):
                          [np.sin(angle), np.cos(angle), 0],
                          [0, 0, 1]])
     return np.dot(rot_mtrx, vec)
+
+
+def homo_y(vec, trans, angle):
+    """rot_y"""
+    angle = np.deg2rad(angle)
+    rot_mtrx = np.array([[np.cos(angle), 0, np.sin(angle), trans[0]],
+                         [0, 1, 0, trans[1]],
+                         [-np.sin(angle), 0, np.cos(angle), trans[2]],
+                         [0, 0, 0, 1]])
+    temp = np.dot(rot_mtrx, np.append(vec, 1))
+    return temp[1:3]
+
+
+def homo_z(vec, trans, angle):
+    """rot_z"""
+    angle = np.deg2rad(angle)
+    rot_mtrx = np.array([[np.cos(angle), -np.sin(angle), 0, trans[0]],
+                         [np.sin(angle), np.cos(angle), 0, trans[1]],
+                         [0, 0, 1, trans[2]],
+                         [0, 0, 0, 1]])
+    temp = np.dot(rot_mtrx, np.append(vec, 1))
+    return temp[1:3]
 
 
 def forward_kinematics(angles):
