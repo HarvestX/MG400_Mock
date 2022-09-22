@@ -9,6 +9,8 @@ J3_MIN = -25
 J3_MAX = 105
 J3_1_MIN = -60
 J3_1_MAX = 60
+J4_MIN = -180
+J4_MAX = 180
 
 
 LINK1 = np.array([43, 0, 0])

@@ -5,20 +5,22 @@ import numpy as np
 from numpy import linalg as LA
 
 from .specification_mg400 import (J1_MAX, J1_MIN, J2_MAX, J2_MIN, J3_1_MAX,
-                                  J3_1_MIN, J3_MAX, J3_MIN, LINK1, LINK2,
-                                  LINK3, LINK4)
+                                  J3_1_MIN, J3_MAX, J3_MIN, J4_MAX, J4_MIN,
+                                  LINK1, LINK2, LINK3, LINK4)
 
 ROUND_DECIMALS = 6
 
 
 def in_working_space(angles):
     """in_working_space_angle"""
-    j_1, j_2, j_3, _, _, _ = angles
+    j_1, j_2, j_3, j_4, _, _ = angles
     j_1_able = (J1_MIN <= j_1 <= J1_MAX)
     j_2_able = (J2_MIN <= j_2 <= J2_MAX)
     j_3_able = (J3_MIN <= j_3 <= J3_MAX)
     j_3_1_able = (J3_1_MIN <= (j_3 - j_2) <= J3_1_MAX)
-    if j_1_able and j_2_able and j_3_able and j_3_1_able:
+    j_4_able = (J4_MIN <= j_4 <= J4_MAX)
+    if j_1_able and j_2_able and \
+            j_3_able and j_3_1_able and j_4_able:
         return True
     return False
 
@@ -52,7 +54,7 @@ def forward_kinematics(angles):
         rot_y(LINK3, j_3) + LINK4
 
     p_x, p_y, p_z = rot_z(pos, j_1)
-    Rz = j_4
+    Rz = j_1 + j_4
     tool_vec = np.round([p_x, p_y, p_z, 0, 0, Rz], decimals=ROUND_DECIMALS)
     return tool_vec
 
@@ -80,7 +82,7 @@ def inverse_kinematics(tool_vec):
     j_2 = -np.rad2deg(j_2)
     j_3_1 = -np.rad2deg(j_3_1)
     j_3 = j_2 + j_3_1
-    j_4 = Rz
+    j_4 = Rz - j_1
     angles = np.round([j_1, j_2, j_3, j_4, 0., 0.], decimals=ROUND_DECIMALS)
 
     if not in_working_space(angles):
