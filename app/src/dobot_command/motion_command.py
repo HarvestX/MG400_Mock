@@ -50,7 +50,6 @@ class MotionCommands:
         if acc_j is not None:
             self.__dobot.set_acc_j_rate(acc_j)
 
-        self.__dobot.register_init_status()
         accepted = self.__dobot.generate_target_in_joint()
         if accepted:
             self.__dobot.set_robot_mode(robot_mode.MODE_RUNNING)
@@ -83,7 +82,6 @@ class MotionCommands:
 
         if accepted:
             self.__dobot.set_robot_mode(robot_mode.MODE_JOG)
-            self.__dobot.register_init_status()
             self.__dobot.log_info_msg("The dobot accepts MoveJog command.")
             return True
 
@@ -114,7 +112,6 @@ class MotionCommands:
         if acc_l is not None:
             self.__dobot.set_acc_l_rate(acc_l)
 
-        self.__dobot.register_init_status()
         accepted = self.__dobot.generate_target_in_tool()
         if accepted:
             self.__dobot.set_robot_mode(robot_mode.MODE_RUNNING)
@@ -139,7 +136,6 @@ class MotionCommands:
             self.__dobot.log_warning_msg("The target is invalid.")
             return False
 
-        self.__dobot.register_init_status()
         accepted = self.__dobot.generate_target_in_joint()
         if accepted:
             self.__dobot.set_robot_mode(robot_mode.MODE_RUNNING)

@@ -189,13 +189,12 @@ class DobotHardware:
             self.__pack_status()
             return self.__status.packet()
 
-    def register_init_status(self):
+    def __register_init_status(self):
         """register_init_status"""
-        with self.__lock:
-            self.__q_init = self.__q_actual
-            self.__tool_vector_init = self.__tool_vector_actual
-            self.__qd_init = self.__qd_actual
-            self.__TCP_speed_init = self.__TCP_speed_actual
+        self.__q_init = self.__q_actual
+        self.__tool_vector_init = self.__tool_vector_actual
+        self.__qd_init = self.__qd_actual
+        self.__TCP_speed_init = self.__TCP_speed_actual
 
     def __update_speed_acc_params(self):
         self.__acc_j = self.__acc_j_rate * self.__acc_j_max * 0.01
@@ -361,6 +360,7 @@ class DobotHardware:
     def generate_target_in_joint(self):
         """generate_joint_target"""
         with self.__lock:
+            self.__register_init_status()
             q_trajs = []
             len_max = 0
             for q_init, q_target, qd_s in \
@@ -386,6 +386,8 @@ class DobotHardware:
     def generate_target_in_tool(self):
         """generate_target_in_tool"""
         with self.__lock:
+            self.__register_init_status()
+
             dist = np.linalg.norm(
                 self.__tool_vector_target[0:3] - self.__tool_vector_init[0:3])
             v_s = np.linalg.norm(self.__TCP_speed_init[0:3])
@@ -426,6 +428,8 @@ class DobotHardware:
     def generate_jog_target(self, axis_id):
         """ generate_jog_target"""
         with self.__lock:
+            self.__register_init_status()
+
             tool_step = \
                 self.__tool_jog_base_step * self.__global_speed_rate * 0.01
             angle_step = \
