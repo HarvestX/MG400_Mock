@@ -21,6 +21,7 @@ from typing import List
 
 import numpy as np
 from dobot_command import robot_mode
+from dobot_command.utils_for_dobot import gene_trapezoid_traj
 from tcp_interface.realtime_packet import RealtimePacket
 from utilities.kinematics_mg400 import forward_kinematics, inverse_kinematics
 
@@ -322,41 +323,6 @@ class DobotHardware:
     def __log_warning_msg(self, text):
         self.__logger.warning(text)
 
-    def __move_time(self, pos_init, pos_target, acc, v_l, v_s):
-        dist = np.abs(pos_target - pos_init)
-        v_s = np.abs(v_s)
-        v_l_max = np.sqrt(acc*dist + v_s**2)
-
-        if v_l_max > v_l:
-            time_acc = (v_l-v_s) / acc
-            time_const = dist/v_l - (v_l**2 - v_s**2) / (acc*v_l)
-            time_total = 2*time_acc + time_const
-        else:
-            time_acc = (v_l_max-v_s)/acc
-            time_const = 0
-            time_total = 2*time_acc
-        return time_acc, time_const, time_total
-
-    def __generate_trapezoid(self, pos_init, pos_target, acc,
-                             v_l, v_s, timestep):
-        """generate_trapezoid"""
-        time_acc, time_const, _ = \
-            self.__move_time(pos_init, pos_target, acc, v_l, v_s)
-        sign_velo = np.sign(pos_target-pos_init)
-
-        time_acc_list = np.linspace(0, time_acc, num=int(
-            time_acc/timestep) + 1, endpoint=True)
-        traj_start = sign_velo * 0.5 * acc * (time_acc_list**2) + pos_init
-
-        time_const_list = np.linspace(0, time_const, num=int(
-            time_const/timestep) + 1, endpoint=True)
-        traj_mid = sign_velo * v_l * time_const_list + traj_start[-1]
-
-        traj_end = traj_mid[-1] - \
-            sign_velo * 0.5 * acc*(time_acc_list**2-2*time_acc_list*time_acc)
-
-        return np.concatenate([traj_start, traj_mid, traj_end], 0)
-
     def generate_target_in_joint(self):
         """generate_joint_target"""
         with self.__lock:
@@ -365,7 +331,7 @@ class DobotHardware:
             len_max = 0
             for q_init, q_target, qd_s in \
                     zip(self.__q_init, self.__q_target, self.__qd_init):
-                traj = self.__generate_trapezoid(
+                traj = gene_trapezoid_traj(
                     q_init, q_target, self.__acc_j,
                     self.__speed_j, qd_s, self.__timestep)
                 np.append(traj, q_target)
@@ -391,7 +357,7 @@ class DobotHardware:
             dist = np.linalg.norm(
                 self.__tool_vector_target[0:3] - self.__tool_vector_init[0:3])
             v_s = np.linalg.norm(self.__TCP_speed_init[0:3])
-            vec_length = self.__generate_trapezoid(
+            vec_length = gene_trapezoid_traj(
                 0, dist, self.__acc_l, self.__speed_l, v_s, self.__timestep)
 
             direction = self.normalize_vec(
@@ -401,7 +367,7 @@ class DobotHardware:
                  for length in vec_length])
             np.append(pos_list, self.__tool_vector_target[0:3])
 
-            r_z_traj = self.__generate_trapezoid(
+            r_z_traj = gene_trapezoid_traj(
                 self.__tool_vector_init[-1], self.__tool_vector_target[-1],
                 self.__acc_j, self.__speed_j, self.__TCP_speed_init[-1],
                 self.__timestep)
