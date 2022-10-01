@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import (kinematics_mg400, return_msg_generator, specification_mg400,
-               statics_mg400)
+from . import (kinematics_mg400, specification_mg400, statics_mg400,
+               utils_for_command)
 
 __all__ = [
     "kinematics_mg400",
-    "return_msg_generator",
+    "utils_for_command",
     "specification_mg400",
     "statics_mg400"]
