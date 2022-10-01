@@ -15,8 +15,9 @@
 
 from dobot_command import robot_mode
 from dobot_command.dobot_hardware import DobotHardware
-from utilities.utils_for_command import (args_parser_jog, args_parser_mov_j,
-                                         args_parser_mov_l)
+from dobot_command.utils_for_command import (args_parser_jog,
+                                             args_parser_mov_j,
+                                             args_parser_mov_l)
 
 
 class MotionCommands:
