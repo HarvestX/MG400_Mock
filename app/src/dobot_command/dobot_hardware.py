@@ -83,6 +83,7 @@ class DobotHardware:
         # args for motion command
         self.__user_index = 0
         self.__tool_index = 0
+        self.__coord_type = 1
         self.__q_init = np.array([0] * 6)
         self.__tool_vector_init = np.array([0] * 6)
         self.__q_previous = self.__q_actual
@@ -292,6 +293,11 @@ class DobotHardware:
         """set_tool_index"""
         with self.__lock:
             self.__tool_index = tool
+
+    def set_coord_type(self, coord_type: int):
+        """set_tool_index"""
+        with self.__lock:
+            self.__coord_type = coord_type
 
     def log_info_msg(self, text):
         """log_info_msg"""
