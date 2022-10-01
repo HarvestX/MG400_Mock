@@ -21,7 +21,8 @@ from typing import List
 
 import numpy as np
 from dobot_command import robot_mode
-from dobot_command.utils_for_dobot import gene_trapezoid_traj
+from dobot_command.utils_for_dobot import (gene_trapezoid_traj,
+                                           toolcoord_to_toolvec)
 from tcp_interface.realtime_packet import RealtimePacket
 from utilities.kinematics_mg400 import forward_kinematics, inverse_kinematics
 
@@ -82,9 +83,6 @@ class DobotHardware:
         self.__update_speed_acc_params()
 
         # args for motion command
-        self.__user_index = 0
-        self.__tool_index = 0
-        self.__coord_type = 1
         self.__q_init = np.array([0] * 6)
         self.__tool_vector_init = np.array([0] * 6)
         self.__q_previous = self.__q_actual
@@ -96,6 +94,34 @@ class DobotHardware:
         self.__time_index = 0
         self.__timestep = 5.0 / 1000
         self.__feedback_time = 8.0 / 1000
+
+        self.__tool_index = 2
+        self.__tool_coord = [
+            [0, 0, 0, 0],
+            [100, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+        ]
+        self.__user_index = 0
+        self.__user_coord = [
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+        ]
+        self.__coord_type = 1
 
     def normalize_vec(self, vec):
         """normalize_vec"""
@@ -241,6 +267,10 @@ class DobotHardware:
         """set_tool_vector_target"""
         with self.__lock:
             try:
+                print(tool_vector_target)
+                tool_vector_target = toolcoord_to_toolvec(
+                    tool_vector_target, self.__tool_coord[self.__tool_index])
+                print(tool_vector_target)
                 angles = inverse_kinematics(np.array(tool_vector_target))
                 self.__tool_vector_target = np.array(tool_vector_target)
                 self.__q_target = angles

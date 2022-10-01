@@ -35,20 +35,21 @@ class MotionCommands:
             self.__dobot.log_warning_msg("The number of arguments is invalid.")
             return False
 
+        if len(args) >= 6:
+            user, tool, speed_j, acc_j = args_parser_mov_j(args[6:])
+            if user is not None:
+                self.__dobot.set_user_index(user)
+            if tool is not None:
+                self.__dobot.set_tool_index(tool)
+            if speed_j is not None:
+                self.__dobot.set_speed_j_rate(speed_j)
+            if acc_j is not None:
+                self.__dobot.set_acc_j_rate(acc_j)
+
         tool_target = list(map(float, args[0:6]))
         if not self.__dobot.set_tool_vector_target(tool_target):
             self.__dobot.log_warning_msg("Failed to calculate path.")
             return False
-
-        user, tool, speed_j, acc_j = args_parser_mov_j(args[6:])
-        if user is not None:
-            self.__dobot.set_user_index(user)
-        if tool is not None:
-            self.__dobot.set_tool_index(tool)
-        if speed_j is not None:
-            self.__dobot.set_speed_j_rate(speed_j)
-        if acc_j is not None:
-            self.__dobot.set_acc_j_rate(acc_j)
 
         accepted = self.__dobot.generate_target_in_joint()
         if accepted:
@@ -69,16 +70,17 @@ class MotionCommands:
             self.__dobot.log_warning_msg("The number of arguments is invalid.")
             return False
 
+        if len(args) >= 1:
+            coord_type, user, tool = args_parser_jog(args[1:])
+            if coord_type is not None:
+                self.__dobot.set_coord_type(coord_type)
+            if user is not None:
+                self.__dobot.set_user_index(user)
+            if tool is not None:
+                self.__dobot.set_tool_index(tool)
+
         axis_id = args[0]
         accepted = self.__dobot.generate_jog_target(axis_id)
-
-        coord_type, user, tool = args_parser_jog(args[1:])
-        if coord_type is not None:
-            self.__dobot.set_coord_type(coord_type)
-        if user is not None:
-            self.__dobot.set_user_index(user)
-        if tool is not None:
-            self.__dobot.set_tool_index(tool)
 
         if accepted:
             self.__dobot.set_robot_mode(robot_mode.MODE_JOG)
@@ -97,20 +99,21 @@ class MotionCommands:
             self.__dobot.log_warning_msg("The number of arguments is invalid.")
             return False
 
+        if len(args) >= 6:
+            user = tool = speed_l = acc_l = args_parser_mov_l(args[6:])
+            if user is not None:
+                self.__dobot.set_user_index(user)
+            if tool is not None:
+                self.__dobot.set_tool_index(tool)
+            if speed_l is not None:
+                self.__dobot.set_speed_l_rate(speed_l)
+            if acc_l is not None:
+                self.__dobot.set_acc_l_rate(acc_l)
+
         tool_target = list(map(float, args[0:6]))
         if not self.__dobot.set_tool_vector_target(tool_target):
             self.__dobot.log_warning_msg("Failed to calculate path")
             return False
-
-        user = tool = speed_l = acc_l = args_parser_mov_l(args[6:])
-        if user is not None:
-            self.__dobot.set_user_index(user)
-        if tool is not None:
-            self.__dobot.set_tool_index(tool)
-        if speed_l is not None:
-            self.__dobot.set_speed_l_rate(speed_l)
-        if acc_l is not None:
-            self.__dobot.set_acc_l_rate(acc_l)
 
         accepted = self.__dobot.generate_target_in_tool()
         if accepted:

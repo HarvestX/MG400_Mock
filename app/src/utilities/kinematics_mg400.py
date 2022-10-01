@@ -1,6 +1,5 @@
 """kinematics for mg400"""
 import math
-from typing import List
 
 import numpy as np
 from numpy import linalg as LA
@@ -52,7 +51,7 @@ def homo_y(vec, trans, angle):
                          [-np.sin(angle), 0, np.cos(angle), trans[2]],
                          [0, 0, 0, 1]])
     temp = np.dot(rot_mtrx, np.append(vec, 1))
-    return temp[1:3]
+    return temp[0:3]
 
 
 def homo_z(vec, trans, angle):
@@ -63,12 +62,11 @@ def homo_z(vec, trans, angle):
                          [0, 0, 1, trans[2]],
                          [0, 0, 0, 1]])
     temp = np.dot(rot_mtrx, np.append(vec, 1))
-    return temp[1:3]
+    return temp[0:3]
 
 
 def forward_kinematics(angles):
     """forward_kinematics"""
-
     if not in_working_space(angles):
         raise ValueError("outside of workspace.")
     j_1, j_2, j_3, j_4, _, _ = angles
