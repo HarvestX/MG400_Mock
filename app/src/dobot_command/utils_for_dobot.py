@@ -1,9 +1,8 @@
 """Utilities for Dobot."""
 import numpy as np
-from utilities.kinematics_mg400 import homo_z
 
 
-def cal_trapezoid_time(pos_init, pos_target, acc, v_l, v_s):
+def cal_trapezoid_time(pos_init, pos_target, acc, v_l, v_s=0.):
     """move_time"""
     dist = np.abs(pos_target - pos_init)
     v_s = np.abs(v_s)
@@ -21,7 +20,7 @@ def cal_trapezoid_time(pos_init, pos_target, acc, v_l, v_s):
 
 
 def gene_trapezoid_traj(pos_init, pos_target, acc,
-                        v_l, v_s, timestep):
+                        v_l, timestep, v_s=0.):
     """generate_trapezoid"""
     time_acc, time_const, _ = cal_trapezoid_time(
         pos_init, pos_target, acc, v_l, v_s)
@@ -43,13 +42,13 @@ def gene_trapezoid_traj(pos_init, pos_target, acc,
 
 def toolvec_to_toolcoord(tool_vec, tool_coord):
     """convert_toolvec_to_toolcoord"""
-    tool_pos = homo_z(tool_vec[0:3], tool_coord[0:3],
-                      tool_coord[-1]-tool_vec[-1])
-    return [*tool_pos, 0., 0., tool_coord[-1]-tool_vec[-1]]
+    tool_pos = np.array(tool_vec[0:3]) + np.array(tool_coord[0:3])
+    tool_ang = tool_vec[-1]-tool_coord[-1]
+    return np.array([*tool_pos, 0., 0., tool_ang])
 
 
 def toolcoord_to_toolvec(tool_vec, tool_coord):
     """convert_toolcoord_to_toolvec"""
     tool_pos = np.array(tool_vec[0:3]) - np.array(tool_coord[0:3])
     tool_ang = tool_coord[-1]-tool_vec[-1]
-    return [*tool_pos, 0., 0., tool_ang]
+    return np.array([*tool_pos, 0., 0., tool_ang])
