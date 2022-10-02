@@ -21,11 +21,10 @@ from typing import List
 
 import numpy as np
 from dobot_command import robot_mode
-from dobot_command.utils_for_dobot import (basecoord_to_toolcoord,
-                                           gene_trapezoid_traj,
-                                           toolcoord_to_basecoord)
+from dobot_command.utils_for_dobot import gene_trapezoid_traj
 from tcp_interface.realtime_packet import RealtimePacket
-from utilities.kinematics_mg400 import forward_kinematics, inverse_kinematics
+from utilities.kinematics_mg400 import (forward_kinematics_b2t,
+                                        inverse_kinematics_t2b)
 
 
 class DobotHardware:
@@ -37,6 +36,34 @@ class DobotHardware:
         self.__motion_que: Queue = Queue()  # for motion command stack
         self.__logger = logging.getLogger("Dobot Hardware")
         self.__log_info_msg("initiate dobot hardware.")
+
+        self.__tool_index = 2
+        self.__tool_coord = [
+            [0, 0, 0, 0],
+            [100, 0, 0, 0],
+            [0, 0, 0, 45],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+        ]
+        self.__user_index = 0
+        self.__user_coord = [
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+        ]
+        self.__coord_type = 1
 
         self.__digital_inputs = 0
         self.__digital_outputs = 0
@@ -53,7 +80,8 @@ class DobotHardware:
         self.__i_actual: np.ndarray = np.array([0] * 6)
         self.__actual_i_TCP_force: np.ndarray = np.array([0] * 6)
         try:
-            tool_vec = forward_kinematics(self.__q_actual)
+            tool_vec = forward_kinematics_b2t(
+                self.__q_actual, self.__tool_coord[self.__tool_index])
             self.__tool_vector_actual: np.ndarray = tool_vec
         except ValueError:
             self. __log_info_msg("the init angle is outside of the workspace.")
@@ -85,7 +113,6 @@ class DobotHardware:
 
         # args for motion command
         self.__q_init = np.array([0] * 6)
-        self.__tool_vector_base = np.array([0] * 6)
         self.__tool_vector_init = np.array([0] * 6)
         self.__q_previous = self.__q_actual
         self.__tool_vector_previous = self.__tool_vector_actual
@@ -94,34 +121,6 @@ class DobotHardware:
         self.__time_index = 0
         self.__timestep = 5.0 / 1000
         self.__feedback_time = 8.0 / 1000
-
-        self.__tool_index = 2
-        self.__tool_coord = [
-            [0, 0, 0, 0],
-            [100, 0, 0, 0],
-            [0, 0, 0, 45],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-        ]
-        self.__user_index = 0
-        self.__user_coord = [
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-        ]
-        self.__coord_type = 1
 
     def normalize_vec(self, vec):
         """normalize_vec"""
@@ -219,9 +218,8 @@ class DobotHardware:
     def __register_init_status(self):
         """register_init_status"""
         self.__q_init = self.__q_actual
-        tool_vector_base = forward_kinematics(self.__q_actual)
-        self.__tool_vector_init = basecoord_to_toolcoord(
-            tool_vector_base, self.__tool_coord[self.__tool_index])
+        self.__tool_vector_init = forward_kinematics_b2t(
+            self.__q_actual, self.__tool_coord[self.__tool_index])
 
     def __update_speed_acc_params(self):
         self.__acc_j = self.__acc_j_rate * self.__acc_j_max * 0.01
@@ -245,7 +243,8 @@ class DobotHardware:
         """set_q_target"""
         with self.__lock:
             try:
-                tool_vex = forward_kinematics(np.array(q_target))
+                tool_vex = forward_kinematics_b2t(
+                    q_target, self.__tool_coord[self.__tool_index])
                 self.__tool_vector_target = tool_vex
                 self.__q_target = np.array(q_target)
                 return True
@@ -268,9 +267,8 @@ class DobotHardware:
         with self.__lock:
             try:
                 self.__tool_vector_target = np.array(tool_vec_target)
-                tool_vec_target_base = toolcoord_to_basecoord(
+                angles = inverse_kinematics_t2b(
                     tool_vec_target, self.__tool_coord[self.__tool_index])
-                angles = inverse_kinematics(np.array(tool_vec_target_base))
                 self.__q_target = angles
                 return True
             except ValueError as err:
@@ -312,15 +310,15 @@ class DobotHardware:
             self.__acc_l_rate = acc_l
             self.__update_speed_acc_params()
 
-    def set_user_index(self, user: int):
-        """set_user_index"""
-        with self.__lock:
-            self.__user_index = user
-
     def set_tool_index(self, tool: int):
         """set_tool_index"""
         with self.__lock:
             self.__tool_index = tool
+
+    def set_user_index(self, user: int):
+        """set_user_index"""
+        with self.__lock:
+            self.__user_index = user
 
     def set_coord_type(self, coord_type: int):
         """set_tool_index"""
@@ -364,7 +362,6 @@ class DobotHardware:
                 len_max = max(len_max, len(traj))
                 q_trajs.append(traj)
 
-            # align the list length of all angle target
             q_trajs = \
                 [np.concatenate([q_traj, [q_traj[-1]]*(len_max-len(q_traj))], 0)
                  if len(q_traj) < len_max else q_traj for q_traj in q_trajs]
@@ -372,9 +369,8 @@ class DobotHardware:
 
             self.__tool_vector_target_set = []
             for q_target in self.__q_target_set:
-                tool_vector_base = forward_kinematics(q_target)
-                tool_vec = basecoord_to_toolcoord(
-                    tool_vector_base, self.__tool_coord[self.__tool_index])
+                tool_vec = forward_kinematics_b2t(
+                    q_target, self.__tool_coord[self.__tool_index])
                 self.__tool_vector_target_set.append(tool_vec)
             return True
 
@@ -411,9 +407,8 @@ class DobotHardware:
             for pos, r_z in zip(pos_list, r_z_traj):
                 pos = np.concatenate([pos, [0, 0, r_z]], 0)
                 try:
-                    pos = toolcoord_to_basecoord(
+                    angles = inverse_kinematics_t2b(
                         pos, self.__tool_coord[self.__tool_index])
-                    angles = inverse_kinematics(pos)
                     self.__tool_vector_target_set.append(pos)
                     self.__q_target_set.append(angles)
                 except ValueError:
@@ -440,7 +435,8 @@ class DobotHardware:
                 else:
                     angles[index] -= angle_step
                 try:
-                    tool_vec = forward_kinematics(angles)
+                    tool_vec = forward_kinematics_b2t(
+                        angles, self.__tool_coord[self.__tool_index])
                 except ValueError:
                     return False
 
@@ -455,7 +451,8 @@ class DobotHardware:
                 else:
                     tool_vec[index] -= step
                 try:
-                    angles = inverse_kinematics(tool_vec)
+                    angles = inverse_kinematics_t2b(
+                        tool_vec, self.__tool_coord[self.__tool_index])
                 except ValueError:
                     return False
 
@@ -483,9 +480,8 @@ class DobotHardware:
 
     def __update_actual_status(self):
         try:
-            self.__tool_vector_base = forward_kinematics(self.__q_actual)
-            self.__tool_vector_actual = basecoord_to_toolcoord(
-                self.__tool_vector_base, self.__tool_coord[self.__tool_index])
+            self.__tool_vector_actual = forward_kinematics_b2t(
+                self.__q_actual, self.__tool_coord[self.__tool_index])
         except ValueError:
             self.__log_info_msg("the actual angle is outside of workspace.")
 

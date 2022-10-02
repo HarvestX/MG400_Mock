@@ -3,7 +3,7 @@ import numpy as np
 
 
 def cal_trapezoid_time(pos_init, pos_target, acc, v_l, v_s=0.):
-    """move_time"""
+    """cal_trapezoid_time"""
     dist = np.abs(pos_target - pos_init)
     v_s = np.abs(v_s)
     v_l_max = np.sqrt(acc*dist + v_s**2)
@@ -21,7 +21,7 @@ def cal_trapezoid_time(pos_init, pos_target, acc, v_l, v_s=0.):
 
 def gene_trapezoid_traj(pos_init, pos_target, acc,
                         v_l, timestep, v_s=0.):
-    """generate_trapezoid"""
+    """gene_trapezoid_traj"""
     time_acc, time_const, _ = cal_trapezoid_time(
         pos_init, pos_target, acc, v_l, v_s)
     sign_velo = np.sign(pos_target-pos_init)
@@ -38,17 +38,3 @@ def gene_trapezoid_traj(pos_init, pos_target, acc,
         sign_velo * 0.5 * acc*(time_acc_list**2-2*time_acc_list*time_acc)
 
     return np.concatenate([traj_start, traj_mid, traj_end], 0)
-
-
-def basecoord_to_toolcoord(vec, tool_coord):
-    """convert_toolvec_to_toolcoord"""
-    pos = np.array(vec[0:3]) + np.array(tool_coord[0:3])
-    ang = vec[-1]-tool_coord[-1]
-    return np.array([*pos, 0., 0., ang])
-
-
-def toolcoord_to_basecoord(vec, tool_coord):
-    """convert_toolcoord_to_toolvec"""
-    pos = np.array(vec[0:3]) - np.array(tool_coord[0:3])
-    ang = vec[-1]+tool_coord[-1]
-    return np.array([*pos, 0., 0., ang])

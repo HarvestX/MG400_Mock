@@ -109,3 +109,31 @@ def inverse_kinematics(tool_vec):
     if not in_working_space(angles):
         raise ValueError("outside of workspace.")
     return np.array(angles)
+
+
+def basecoord_to_toolcoord(vec, tool_coord):
+    """convert_toolvec_to_toolcoord"""
+    pos = np.array(vec[0:3]) + np.array(tool_coord[0:3])
+    ang = vec[-1]-tool_coord[-1]
+    return np.array([*pos, 0., 0., ang])
+
+
+def toolcoord_to_basecoord(vec, tool_coord):
+    """convert_toolcoord_to_toolvec"""
+    pos = np.array(vec[0:3]) - np.array(tool_coord[0:3])
+    ang = vec[-1]+tool_coord[-1]
+    return np.array([*pos, 0., 0., ang])
+
+
+def inverse_kinematics_t2b(tool_vec, tool_coord):
+    """inverse_kinematics_t2b"""
+    tool_vec_base = toolcoord_to_basecoord(tool_vec, tool_coord)
+    angles = inverse_kinematics(tool_vec_base)
+    return angles
+
+
+def forward_kinematics_b2t(angles, tool_coord):
+    """forward_kinematics_b2t"""
+    tool_vec_base = forward_kinematics(angles)
+    tool_vec = basecoord_to_toolcoord(tool_vec_base, tool_coord)
+    return tool_vec

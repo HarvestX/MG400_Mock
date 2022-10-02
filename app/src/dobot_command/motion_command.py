@@ -28,6 +28,7 @@ class MotionCommands:
 
     def MovJ(self, args):
         """MovJ"""
+        # TODO: Implement user coordinate system
         if self.__dobot.get_robot_mode() is not robot_mode.MODE_ENABLE:
             self.__dobot.log_warning_msg("The robot mode is not enable.")
             return False
@@ -63,6 +64,7 @@ class MotionCommands:
 
     def MoveJog(self, args):
         """MoveJog"""
+        # TODO: Implement user and tool coordinate system
         if self.__dobot.get_robot_mode() is not robot_mode.MODE_ENABLE:
             self.__dobot.log_warning_msg("The robot mode is not enable.")
             return False
@@ -92,6 +94,7 @@ class MotionCommands:
 
     def MovL(self, args):
         """MovL"""
+        # TODO: Implement user coordinate system
         if self.__dobot.get_robot_mode() is not robot_mode.MODE_ENABLE:
             self.__dobot.log_warning_msg("The robot mode is not enable.")
             return False
