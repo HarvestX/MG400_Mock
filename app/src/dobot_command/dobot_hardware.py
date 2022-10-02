@@ -37,7 +37,7 @@ class DobotHardware:
         self.__logger = logging.getLogger("Dobot Hardware")
         self.__log_info_msg("initiate dobot hardware.")
 
-        self.__tool_index = 1
+        self.__tool_index = 0
         self.__tool_coord = [
             [0, 0, 0, 0],
             [100, 0, 0, 0],
