@@ -22,6 +22,7 @@ from typing import List
 import numpy as np
 from dobot_command import robot_mode
 from tcp_interface.realtime_packet import RealtimePacket
+from utilities.coordinate_loader import load_coordinate
 from utilities.kinematics_mg400 import (forward_kinematics_b2t,
                                         inverse_kinematics_t2b)
 from utilities.trapezoid_trajectory import gene_trapezoid_traj
@@ -38,31 +39,9 @@ class DobotHardware:
         self.__log_info_msg("initiate dobot hardware.")
 
         self.__tool_index = 0
-        self.__tool_coord = [
-            [0, 0, 0, 0],
-            [100, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-        ]
+        self.__tool_coord = load_coordinate("./assets/tool.yml")
         self.__user_index = 0
-        self.__user_coord = [
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-        ]
+        self.__user_coord = load_coordinate("./assets/user.yml")
         self.__coord_type = 1
 
         self.__digital_inputs = 0

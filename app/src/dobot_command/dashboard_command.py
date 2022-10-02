@@ -15,7 +15,7 @@
 
 from dobot_command import robot_mode
 from dobot_command.dobot_hardware import DobotHardware
-from dobot_command.utils_for_command import generate_return_msg
+from utilities.utils_for_command import generate_return_msg
 
 
 class DashboardCommands:
