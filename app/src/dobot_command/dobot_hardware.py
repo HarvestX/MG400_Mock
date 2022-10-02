@@ -21,10 +21,10 @@ from typing import List
 
 import numpy as np
 from dobot_command import robot_mode
-from dobot_command.utils_for_dobot import gene_trapezoid_traj
 from tcp_interface.realtime_packet import RealtimePacket
 from utilities.kinematics_mg400 import (forward_kinematics_b2t,
                                         inverse_kinematics_t2b)
+from utilities.trapezoid_trajectory import gene_trapezoid_traj
 
 
 class DobotHardware:
@@ -37,11 +37,11 @@ class DobotHardware:
         self.__logger = logging.getLogger("Dobot Hardware")
         self.__log_info_msg("initiate dobot hardware.")
 
-        self.__tool_index = 2
+        self.__tool_index = 1
         self.__tool_coord = [
             [0, 0, 0, 0],
             [100, 0, 0, 0],
-            [0, 0, 0, 45],
+            [0, 0, 0, 0],
             [0, 0, 0, 0],
             [0, 0, 0, 0],
             [0, 0, 0, 0],

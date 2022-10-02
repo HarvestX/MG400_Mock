@@ -1,4 +1,4 @@
-"""Utilities for Dobot."""
+"""Trapezoid Trajectory."""
 import numpy as np
 
 

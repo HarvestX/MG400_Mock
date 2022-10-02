@@ -13,9 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import kinematics_mg400, specification_mg400, statics_mg400
+from . import (kinematics_mg400, specification_mg400, statics_mg400,
+               trapezoid_trajectory)
 
 __all__ = [
     "kinematics_mg400",
     "specification_mg400",
-    "statics_mg400"]
+    "statics_mg400",
+    "trapezoid_trajectory"]
