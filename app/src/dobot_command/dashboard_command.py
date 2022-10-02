@@ -95,6 +95,14 @@ class DashboardCommands:
         """SpeedFactor"""
         return self.__single_int_command(args, 0, 100, self.__dobot.set_speed_factor)
 
+    def Tool(self, args):
+        """Tool"""
+        return self.__single_int_command(args, 0, 9, self.__dobot.set_tool_index)
+
+    def User(self, args):
+        """User"""
+        return self.__single_int_command(args, 0, 9, self.__dobot.set_user_index)
+
     def AccJ(self, args):
         """AccJ"""
         return self.__single_int_command(args, 1, 100, self.__dobot.set_acc_j_rate)
