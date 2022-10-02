@@ -8,6 +8,7 @@
     "asarray",
     "atol",
     "backdrive",
+    "basecoord",
     "dobot",
     "dtype",
     "imshow",

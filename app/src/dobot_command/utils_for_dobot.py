@@ -40,15 +40,15 @@ def gene_trapezoid_traj(pos_init, pos_target, acc,
     return np.concatenate([traj_start, traj_mid, traj_end], 0)
 
 
-def toolvec_to_toolcoord(tool_vec, tool_coord):
+def basecoord_to_toolcoord(vec, tool_coord):
     """convert_toolvec_to_toolcoord"""
-    tool_pos = np.array(tool_vec[0:3]) + np.array(tool_coord[0:3])
-    tool_ang = tool_vec[-1]-tool_coord[-1]
-    return np.array([*tool_pos, 0., 0., tool_ang])
+    pos = np.array(vec[0:3]) + np.array(tool_coord[0:3])
+    ang = vec[-1]-tool_coord[-1]
+    return np.array([*pos, 0., 0., ang])
 
 
-def toolcoord_to_toolvec(tool_vec, tool_coord):
+def toolcoord_to_basecoord(vec, tool_coord):
     """convert_toolcoord_to_toolvec"""
-    tool_pos = np.array(tool_vec[0:3]) - np.array(tool_coord[0:3])
-    tool_ang = tool_coord[-1]-tool_vec[-1]
-    return np.array([*tool_pos, 0., 0., tool_ang])
+    pos = np.array(vec[0:3]) - np.array(tool_coord[0:3])
+    ang = vec[-1]+tool_coord[-1]
+    return np.array([*pos, 0., 0., ang])
