@@ -370,21 +370,21 @@ class DobotHardware:
                  for length in vec_length])
             np.append(pos_list, self.__tool_vector_target[0:3])
 
-            r_z_traj = gene_trapezoid_traj(
-                self.__tool_vector_init[-1], self.__tool_vector_target[-1],
+            r_x_traj = gene_trapezoid_traj(
+                self.__tool_vector_init[3], self.__tool_vector_target[3],
                 self.__acc_j, self.__speed_j, self.__timestep)
 
-            if len(r_z_traj) < len(pos_list):
-                r_z_traj = np.concatenate(
-                    [r_z_traj, [r_z_traj[-1]]*(len(pos_list)-len(r_z_traj))], 0)
-            elif len(r_z_traj) > len(pos_list):
+            if len(r_x_traj) < len(pos_list):
+                r_x_traj = np.concatenate(
+                    [r_x_traj, [r_x_traj[-1]]*(len(pos_list)-len(r_x_traj))], 0)
+            elif len(r_x_traj) > len(pos_list):
                 pos_list = np.concatenate(
-                    [pos_list, [pos_list[-1]]*(len(r_z_traj)-len(pos_list))], 0)
+                    [pos_list, [pos_list[-1]]*(len(r_x_traj)-len(pos_list))], 0)
 
             self.__tool_vector_target_set = []
             self.__q_target_set = []
-            for pos, r_z in zip(pos_list, r_z_traj):
-                pos = np.concatenate([pos, [0, 0, r_z]], 0)
+            for pos, r_x in zip(pos_list, r_x_traj):
+                pos = np.concatenate([pos, [r_x, 0, 0]], 0)
                 try:
                     angles = inverse_kinematics_t2b(
                         pos, self.__tool_coord[self.__tool_index])
