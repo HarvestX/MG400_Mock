@@ -22,6 +22,8 @@ good-names=
     GetErrorID,
     ResetRobot,
     SpeedFactor,
+    Tool,
+    User,
     AccJ,
     AccL,
     SpeedJ,

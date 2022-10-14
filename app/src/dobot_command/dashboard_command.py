@@ -15,7 +15,7 @@
 
 from dobot_command import robot_mode
 from dobot_command.dobot_hardware import DobotHardware
-from utilities.return_msg_generator import generate_return_msg
+from utilities.utils_for_command import generate_return_msg
 
 
 class DashboardCommands:
@@ -94,6 +94,14 @@ class DashboardCommands:
     def SpeedFactor(self, args):
         """SpeedFactor"""
         return self.__single_int_command(args, 0, 100, self.__dobot.set_speed_factor)
+
+    def Tool(self, args):
+        """Tool"""
+        return self.__single_int_command(args, 0, 9, self.__dobot.set_tool_index)
+
+    def User(self, args):
+        """User"""
+        return self.__single_int_command(args, 0, 9, self.__dobot.set_user_index)
 
     def AccJ(self, args):
         """AccJ"""

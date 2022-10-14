@@ -43,9 +43,30 @@ def rot_z(vec, angle):
     return np.dot(rot_mtrx, vec)
 
 
+def homo_y(vec, trans, angle):
+    """rot_y"""
+    angle = np.deg2rad(angle)
+    rot_mtrx = np.array([[np.cos(angle), 0, np.sin(angle), trans[0]],
+                         [0, 1, 0, trans[1]],
+                         [-np.sin(angle), 0, np.cos(angle), trans[2]],
+                         [0, 0, 0, 1]])
+    temp = np.dot(rot_mtrx, np.append(vec, 1))
+    return temp[0:3]
+
+
+def homo_z(vec, trans, angle):
+    """rot_z"""
+    angle = np.deg2rad(angle)
+    rot_mtrx = np.array([[np.cos(angle), -np.sin(angle), 0, trans[0]],
+                         [np.sin(angle), np.cos(angle), 0, trans[1]],
+                         [0, 0, 1, trans[2]],
+                         [0, 0, 0, 1]])
+    temp = np.dot(rot_mtrx, np.append(vec, 1))
+    return temp[0:3]
+
+
 def forward_kinematics(angles):
     """forward_kinematics"""
-
     if not in_working_space(angles):
         raise ValueError("outside of workspace.")
     j_1, j_2, j_3, j_4, _, _ = angles
@@ -54,14 +75,14 @@ def forward_kinematics(angles):
         rot_y(LINK3, j_3) + LINK4
 
     p_x, p_y, p_z = rot_z(pos, j_1)
-    Rz = j_1 + j_4
-    tool_vec = np.round([p_x, p_y, p_z, 0, 0, Rz], decimals=ROUND_DECIMALS)
+    Rx = j_1 + j_4
+    tool_vec = np.round([p_x, p_y, p_z, Rx, 0, 0], decimals=ROUND_DECIMALS)
     return tool_vec
 
 
 def inverse_kinematics(tool_vec):
     """inverse_kinematics"""
-    p_x, p_y, p_z, _, _, Rz = tool_vec
+    p_x, p_y, p_z, Rx, _, _ = tool_vec
     pp_x = LA.norm([p_x, p_y]) - LINK4[0] - LINK1[0]
     pp_z = p_z - LINK4[2] - LINK1[2]
     length2 = LA.norm(LINK2)
@@ -82,9 +103,37 @@ def inverse_kinematics(tool_vec):
     j_2 = -np.rad2deg(j_2)
     j_3_1 = -np.rad2deg(j_3_1)
     j_3 = j_2 + j_3_1
-    j_4 = Rz - j_1
+    j_4 = Rx - j_1
     angles = np.round([j_1, j_2, j_3, j_4, 0., 0.], decimals=ROUND_DECIMALS)
 
     if not in_working_space(angles):
         raise ValueError("outside of workspace.")
     return np.array(angles)
+
+
+def basecoord_to_toolcoord(vec, tool_coord):
+    """convert_toolvec_to_toolcoord"""
+    pos = np.array(vec[0:3]) + np.array(tool_coord[0:3])
+    ang = vec[3]-tool_coord[-1]
+    return np.array([*pos, ang, 0., 0.])
+
+
+def toolcoord_to_basecoord(vec, tool_coord):
+    """convert_toolcoord_to_toolvec"""
+    pos = np.array(vec[0:3]) - np.array(tool_coord[0:3])
+    ang = vec[3]+tool_coord[-1]
+    return np.array([*pos, ang, 0., 0.])
+
+
+def inverse_kinematics_t2b(tool_vec, tool_coord):
+    """inverse_kinematics_t2b"""
+    tool_vec_base = toolcoord_to_basecoord(tool_vec, tool_coord)
+    angles = inverse_kinematics(tool_vec_base)
+    return angles
+
+
+def forward_kinematics_b2t(angles, tool_coord):
+    """forward_kinematics_b2t"""
+    tool_vec_base = forward_kinematics(angles)
+    tool_vec = basecoord_to_toolcoord(tool_vec_base, tool_coord)
+    return tool_vec

@@ -22,7 +22,10 @@ from typing import List
 import numpy as np
 from dobot_command import robot_mode
 from tcp_interface.realtime_packet import RealtimePacket
-from utilities.kinematics_mg400 import forward_kinematics, inverse_kinematics
+from utilities.coordinate_loader import load_coordinate
+from utilities.kinematics_mg400 import (forward_kinematics_b2t,
+                                        inverse_kinematics_t2b)
+from utilities.trapezoid_trajectory import gene_trapezoid_traj
 
 
 class DobotHardware:
@@ -34,6 +37,12 @@ class DobotHardware:
         self.__motion_que: Queue = Queue()  # for motion command stack
         self.__logger = logging.getLogger("Dobot Hardware")
         self.__log_info_msg("initiate dobot hardware.")
+
+        self.__tool_index = 0
+        self.__tool_coord = load_coordinate("./assets/tool.yml")
+        self.__user_index = 0
+        self.__user_coord = load_coordinate("./assets/user.yml")
+        self.__coord_type = 1
 
         self.__digital_inputs = 0
         self.__digital_outputs = 0
@@ -50,7 +59,8 @@ class DobotHardware:
         self.__i_actual: np.ndarray = np.array([0] * 6)
         self.__actual_i_TCP_force: np.ndarray = np.array([0] * 6)
         try:
-            tool_vec = forward_kinematics(self.__q_actual)
+            tool_vec = forward_kinematics_b2t(
+                self.__q_actual, self.__tool_coord[self.__tool_index])
             self.__tool_vector_actual: np.ndarray = tool_vec
         except ValueError:
             self. __log_info_msg("the init angle is outside of the workspace.")
@@ -85,8 +95,6 @@ class DobotHardware:
         self.__tool_vector_init = np.array([0] * 6)
         self.__q_previous = self.__q_actual
         self.__tool_vector_previous = self.__tool_vector_actual
-        self.__qd_init = np.array([0]*6)
-        self.__TCP_speed_init = np.array([0]*6)
         self.__q_target_set: List[np.ndarray] = []
         self.__tool_vector_target_set: List[np.ndarray] = []
         self.__time_index = 0
@@ -186,13 +194,11 @@ class DobotHardware:
             self.__pack_status()
             return self.__status.packet()
 
-    def register_init_status(self):
+    def __register_init_status(self):
         """register_init_status"""
-        with self.__lock:
-            self.__q_init = self.__q_actual
-            self.__tool_vector_init = self.__tool_vector_actual
-            self.__qd_init = self.__qd_actual
-            self.__TCP_speed_init = self.__TCP_speed_actual
+        self.__q_init = self.__q_actual
+        self.__tool_vector_init = forward_kinematics_b2t(
+            self.__q_actual, self.__tool_coord[self.__tool_index])
 
     def __update_speed_acc_params(self):
         self.__acc_j = self.__acc_j_rate * self.__acc_j_max * 0.01
@@ -216,7 +222,8 @@ class DobotHardware:
         """set_q_target"""
         with self.__lock:
             try:
-                tool_vex = forward_kinematics(np.array(q_target))
+                tool_vex = forward_kinematics_b2t(
+                    q_target, self.__tool_coord[self.__tool_index])
                 self.__tool_vector_target = tool_vex
                 self.__q_target = np.array(q_target)
                 return True
@@ -234,12 +241,13 @@ class DobotHardware:
         with self.__lock:
             self.__qdd_target = np.array(qdd_target)
 
-    def set_tool_vector_target(self, tool_vector_target: List[float]):
+    def set_tool_vector_target(self, tool_vec_target: List[float]):
         """set_tool_vector_target"""
         with self.__lock:
             try:
-                angles = inverse_kinematics(np.array(tool_vector_target))
-                self.__tool_vector_target = np.array(tool_vector_target)
+                self.__tool_vector_target = np.array(tool_vec_target)
+                angles = inverse_kinematics_t2b(
+                    tool_vec_target, self.__tool_coord[self.__tool_index])
                 self.__q_target = angles
                 return True
             except ValueError as err:
@@ -281,6 +289,21 @@ class DobotHardware:
             self.__acc_l_rate = acc_l
             self.__update_speed_acc_params()
 
+    def set_tool_index(self, tool: int):
+        """set_tool_index"""
+        with self.__lock:
+            self.__tool_index = tool
+
+    def set_user_index(self, user: int):
+        """set_user_index"""
+        with self.__lock:
+            self.__user_index = user
+
+    def set_coord_type(self, coord_type: int):
+        """set_tool_index"""
+        with self.__lock:
+            self.__coord_type = coord_type
+
     def log_info_msg(self, text):
         """log_info_msg"""
         with self.__lock:
@@ -305,51 +328,15 @@ class DobotHardware:
     def __log_warning_msg(self, text):
         self.__logger.warning(text)
 
-    def __move_time(self, pos_init, pos_target, acc, v_l, v_s):
-        dist = np.abs(pos_target - pos_init)
-        v_s = np.abs(v_s)
-        v_l_max = np.sqrt(acc*dist + v_s**2)
-
-        if v_l_max > v_l:
-            time_acc = (v_l-v_s) / acc
-            time_const = dist/v_l - (v_l**2 - v_s**2) / (acc*v_l)
-            time_total = 2*time_acc + time_const
-        else:
-            time_acc = (v_l_max-v_s)/acc
-            time_const = 0
-            time_total = 2*time_acc
-        return time_acc, time_const, time_total
-
-    def __generate_trapezoid(self, pos_init, pos_target, acc,
-                             v_l, v_s, timestep):
-        """generate_trapezoid"""
-        time_acc, time_const, _ = \
-            self.__move_time(pos_init, pos_target, acc, v_l, v_s)
-        sign_velo = np.sign(pos_target-pos_init)
-
-        time_acc_list = np.linspace(0, time_acc, num=int(
-            time_acc/timestep) + 1, endpoint=True)
-        traj_start = sign_velo * 0.5 * acc * (time_acc_list**2) + pos_init
-
-        time_const_list = np.linspace(0, time_const, num=int(
-            time_const/timestep) + 1, endpoint=True)
-        traj_mid = sign_velo * v_l * time_const_list + traj_start[-1]
-
-        traj_end = traj_mid[-1] - \
-            sign_velo * 0.5 * acc*(time_acc_list**2-2*time_acc_list*time_acc)
-
-        return np.concatenate([traj_start, traj_mid, traj_end], 0)
-
     def generate_target_in_joint(self):
         """generate_joint_target"""
         with self.__lock:
+            self.__register_init_status()
             q_trajs = []
             len_max = 0
-            for q_init, q_target, qd_s in \
-                    zip(self.__q_init, self.__q_target, self.__qd_init):
-                traj = self.__generate_trapezoid(
-                    q_init, q_target, self.__acc_j,
-                    self.__speed_j, qd_s, self.__timestep)
+            for q_init, q_target in zip(self.__q_init, self.__q_target):
+                traj = gene_trapezoid_traj(q_init, q_target, self.__acc_j,
+                                           self.__speed_j, self.__timestep)
                 np.append(traj, q_target)
                 len_max = max(len_max, len(traj))
                 q_trajs.append(traj)
@@ -361,18 +348,20 @@ class DobotHardware:
 
             self.__tool_vector_target_set = []
             for q_target in self.__q_target_set:
-                tool_vec = forward_kinematics(q_target)
+                tool_vec = forward_kinematics_b2t(
+                    q_target, self.__tool_coord[self.__tool_index])
                 self.__tool_vector_target_set.append(tool_vec)
             return True
 
     def generate_target_in_tool(self):
         """generate_target_in_tool"""
         with self.__lock:
+            self.__register_init_status()
+
             dist = np.linalg.norm(
                 self.__tool_vector_target[0:3] - self.__tool_vector_init[0:3])
-            v_s = np.linalg.norm(self.__TCP_speed_init[0:3])
-            vec_length = self.__generate_trapezoid(
-                0, dist, self.__acc_l, self.__speed_l, v_s, self.__timestep)
+            vec_length = gene_trapezoid_traj(0, dist, self.__acc_l,
+                                             self.__speed_l, self.__timestep)
 
             direction = self.normalize_vec(
                 self.__tool_vector_target[0:3] - self.__tool_vector_init[0:3])
@@ -381,24 +370,24 @@ class DobotHardware:
                  for length in vec_length])
             np.append(pos_list, self.__tool_vector_target[0:3])
 
-            r_z_traj = self.__generate_trapezoid(
-                self.__tool_vector_init[-1], self.__tool_vector_target[-1],
-                self.__acc_j, self.__speed_j, self.__TCP_speed_init[-1],
-                self.__timestep)
+            r_x_traj = gene_trapezoid_traj(
+                self.__tool_vector_init[3], self.__tool_vector_target[3],
+                self.__acc_j, self.__speed_j, self.__timestep)
 
-            if len(r_z_traj) < len(pos_list):
-                r_z_traj = np.concatenate(
-                    [r_z_traj, [r_z_traj[-1]]*(len(pos_list)-len(r_z_traj))], 0)
-            elif len(r_z_traj) > len(pos_list):
+            if len(r_x_traj) < len(pos_list):
+                r_x_traj = np.concatenate(
+                    [r_x_traj, [r_x_traj[-1]]*(len(pos_list)-len(r_x_traj))], 0)
+            elif len(r_x_traj) > len(pos_list):
                 pos_list = np.concatenate(
-                    [pos_list, [pos_list[-1]]*(len(r_z_traj)-len(pos_list))], 0)
+                    [pos_list, [pos_list[-1]]*(len(r_x_traj)-len(pos_list))], 0)
 
             self.__tool_vector_target_set = []
             self.__q_target_set = []
-            for pos, r_z in zip(pos_list, r_z_traj):
-                pos = np.concatenate([pos, [0, 0, r_z]], 0)
+            for pos, r_x in zip(pos_list, r_x_traj):
+                pos = np.concatenate([pos, [r_x, 0, 0]], 0)
                 try:
-                    angles = inverse_kinematics(pos)
+                    angles = inverse_kinematics_t2b(
+                        pos, self.__tool_coord[self.__tool_index])
                     self.__tool_vector_target_set.append(pos)
                     self.__q_target_set.append(angles)
                 except ValueError:
@@ -408,6 +397,8 @@ class DobotHardware:
     def generate_jog_target(self, axis_id):
         """ generate_jog_target"""
         with self.__lock:
+            self.__register_init_status()
+
             tool_step = \
                 self.__tool_jog_base_step * self.__global_speed_rate * 0.01
             angle_step = \
@@ -423,7 +414,8 @@ class DobotHardware:
                 else:
                     angles[index] -= angle_step
                 try:
-                    tool_vec = forward_kinematics(angles)
+                    tool_vec = forward_kinematics_b2t(
+                        angles, self.__tool_coord[self.__tool_index])
                 except ValueError:
                     return False
 
@@ -438,7 +430,8 @@ class DobotHardware:
                 else:
                     tool_vec[index] -= step
                 try:
-                    angles = inverse_kinematics(tool_vec)
+                    angles = inverse_kinematics_t2b(
+                        tool_vec, self.__tool_coord[self.__tool_index])
                 except ValueError:
                     return False
 
@@ -466,8 +459,8 @@ class DobotHardware:
 
     def __update_actual_status(self):
         try:
-            tool_vec = forward_kinematics(self.__q_actual)
-            self.__tool_vector_actual = tool_vec
+            self.__tool_vector_actual = forward_kinematics_b2t(
+                self.__q_actual, self.__tool_coord[self.__tool_index])
         except ValueError:
             self.__log_info_msg("the actual angle is outside of workspace.")
 

@@ -15,6 +15,8 @@
 
 from dobot_command import robot_mode
 from dobot_command.dobot_hardware import DobotHardware
+from utilities.utils_for_command import (args_parser_jog, args_parser_mov_j,
+                                         args_parser_mov_l)
 
 
 class MotionCommands:
@@ -25,7 +27,7 @@ class MotionCommands:
 
     def MovJ(self, args):
         """MovJ"""
-        # TODO: to be acceptable optional args.
+        # TODO: Implement user coordinate system
         if self.__dobot.get_robot_mode() is not robot_mode.MODE_ENABLE:
             self.__dobot.log_warning_msg("The robot mode is not enable.")
             return False
@@ -33,12 +35,22 @@ class MotionCommands:
             self.__dobot.log_warning_msg("The number of arguments is invalid.")
             return False
 
+        if len(args) > 6:
+            user, tool, speed_j, acc_j = args_parser_mov_j(args[7:])
+            if user is not None:
+                self.__dobot.set_user_index(user)
+            if tool is not None:
+                self.__dobot.set_tool_index(tool)
+            if speed_j is not None:
+                self.__dobot.set_speed_j_rate(speed_j)
+            if acc_j is not None:
+                self.__dobot.set_acc_j_rate(acc_j)
+
         tool_target = list(map(float, args[0:6]))
         if not self.__dobot.set_tool_vector_target(tool_target):
             self.__dobot.log_warning_msg("Failed to calculate path.")
             return False
 
-        self.__dobot.register_init_status()
         accepted = self.__dobot.generate_target_in_joint()
         if accepted:
             self.__dobot.set_robot_mode(robot_mode.MODE_RUNNING)
@@ -51,7 +63,7 @@ class MotionCommands:
 
     def MoveJog(self, args):
         """MoveJog"""
-        # TODO: to be acceptable optional args.
+        # TODO: Implement user and tool coordinate system
         if self.__dobot.get_robot_mode() is not robot_mode.MODE_ENABLE:
             self.__dobot.log_warning_msg("The robot mode is not enable.")
             return False
@@ -59,12 +71,20 @@ class MotionCommands:
             self.__dobot.log_warning_msg("The number of arguments is invalid.")
             return False
 
+        if len(args) >= 1:
+            coord_type, user, tool = args_parser_jog(args[1:])
+            if coord_type is not None:
+                self.__dobot.set_coord_type(coord_type)
+            if user is not None:
+                self.__dobot.set_user_index(user)
+            if tool is not None:
+                self.__dobot.set_tool_index(tool)
+
         axis_id = args[0]
         accepted = self.__dobot.generate_jog_target(axis_id)
 
         if accepted:
             self.__dobot.set_robot_mode(robot_mode.MODE_JOG)
-            self.__dobot.register_init_status()
             self.__dobot.log_info_msg("The dobot accepts MoveJog command.")
             return True
 
@@ -73,20 +93,30 @@ class MotionCommands:
 
     def MovL(self, args):
         """MovL"""
-        # TODO: to be acceptable optional args.
+        # TODO: Implement user coordinate system
         if self.__dobot.get_robot_mode() is not robot_mode.MODE_ENABLE:
             self.__dobot.log_warning_msg("The robot mode is not enable.")
             return False
         if len(args) < 6:
             self.__dobot.log_warning_msg("The number of arguments is invalid.")
             return False
-        tool_target = list(map(float, args[0:6]))
 
+        if len(args) > 6:
+            user = tool = speed_l = acc_l = args_parser_mov_l(args[7:])
+            if user is not None:
+                self.__dobot.set_user_index(user)
+            if tool is not None:
+                self.__dobot.set_tool_index(tool)
+            if speed_l is not None:
+                self.__dobot.set_speed_l_rate(speed_l)
+            if acc_l is not None:
+                self.__dobot.set_acc_l_rate(acc_l)
+
+        tool_target = list(map(float, args[0:6]))
         if not self.__dobot.set_tool_vector_target(tool_target):
             self.__dobot.log_warning_msg("Failed to calculate path")
             return False
 
-        self.__dobot.register_init_status()
         accepted = self.__dobot.generate_target_in_tool()
         if accepted:
             self.__dobot.set_robot_mode(robot_mode.MODE_RUNNING)
@@ -99,7 +129,6 @@ class MotionCommands:
 
     def JointMovJ(self, args):
         """JointMovJ"""
-        # TODO: to be acceptable optional args.
         if self.__dobot.get_robot_mode() is not robot_mode.MODE_ENABLE:
             self.__dobot.log_warning_msg("The robot mode is not enable.")
             return False
@@ -112,7 +141,6 @@ class MotionCommands:
             self.__dobot.log_warning_msg("The target is invalid.")
             return False
 
-        self.__dobot.register_init_status()
         accepted = self.__dobot.generate_target_in_joint()
         if accepted:
             self.__dobot.set_robot_mode(robot_mode.MODE_RUNNING)
