@@ -33,6 +33,7 @@ class MotionCommands:
             return False
         if len(args) < 6:
             self.__dobot.log_warning_msg("The number of arguments is invalid.")
+            self.__dobot.set_robot_mode(robot_mode.MODE_ERROR)
             return False
 
         if len(args) > 6:
@@ -49,6 +50,7 @@ class MotionCommands:
         tool_target = list(map(float, args[0:6]))
         if not self.__dobot.set_tool_vector_target(tool_target):
             self.__dobot.log_warning_msg("Failed to calculate path.")
+            self.__dobot.set_robot_mode(robot_mode.MODE_ERROR)
             return False
 
         accepted = self.__dobot.generate_target_in_joint()
@@ -59,6 +61,7 @@ class MotionCommands:
             return True
 
         self.__dobot.log_warning_msg("out of range.")
+        self.__dobot.set_robot_mode(robot_mode.MODE_ERROR)
         return False
 
     def MoveJog(self, args):

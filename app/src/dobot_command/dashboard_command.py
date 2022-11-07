@@ -66,8 +66,11 @@ class DashboardCommands:
     def ClearError(self, args) -> str:
         """ClearError"""
         _ = args  # for pylint waring
-        self.__dobot.clear_error()
         error_id = self.__dobot.get_error_id()
+        # TODO: Chekc error id.
+        # Some error id is not clearable
+        self.__dobot.clear_error()
+        self.__dobot.set_robot_mode(robot_mode.MODE_ENABLE)
         return generate_return_msg(error_id)
 
     def GetErrorID(self, args) -> str:
