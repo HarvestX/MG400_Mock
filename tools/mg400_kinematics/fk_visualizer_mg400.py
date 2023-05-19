@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """MG400 Kinematics Tester."""
 import importlib
 import os
@@ -37,19 +38,20 @@ def update(_):
     j_2 = j2_slider.val
     j_3 = j3_slider.val
     angles = [0, j_2, j_3, 0, 0, 0]
-    solved, tool_vec = forward_kinematics(angles)
-    _ = tool_vec  # for pylint warning
+    try:
+        _ = forward_kinematics(angles)
+    except ValueError:
+        return
 
-    if solved is True:
-        link1, link2, link3, link4 = link_pos_2d(angles)
-        link1_line[0].set_xdata([ORIGIN[0], link1[0]])
-        link1_line[0].set_ydata([ORIGIN[1], link1[1]])
-        link2_line[0].set_xdata([link1[0], link2[0]])
-        link2_line[0].set_ydata([link1[1], link2[1]])
-        link3_line[0].set_xdata([link2[0], link3[0]])
-        link3_line[0].set_ydata([link2[1], link3[1]])
-        link4_line[0].set_xdata([link3[0], link4[0]])
-        link4_line[0].set_ydata([link3[1], link4[1]])
+    link1, link2, link3, link4 = link_pos_2d(angles)
+    link1_line[0].set_xdata([ORIGIN[0], link1[0]])
+    link1_line[0].set_ydata([ORIGIN[1], link1[1]])
+    link2_line[0].set_xdata([link1[0], link2[0]])
+    link2_line[0].set_ydata([link1[1], link2[1]])
+    link3_line[0].set_xdata([link2[0], link3[0]])
+    link3_line[0].set_ydata([link2[1], link3[1]])
+    link4_line[0].set_xdata([link3[0], link4[0]])
+    link4_line[0].set_ydata([link3[1], link4[1]])
 
     fig.canvas.draw_idle()
 

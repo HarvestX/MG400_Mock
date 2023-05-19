@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """MG400 Kinematics Tester."""
 import importlib
 import os
@@ -37,18 +38,20 @@ def update(_):
     tip.set_offsets([p_x, p_z])
 
     tool_vec = [p_x, 0, p_z, 0, 0, 0]
-    solved, angles = inverse_kinematics(tool_vec)
+    try:
+        angles = inverse_kinematics(tool_vec)
+    except ValueError:
+        return
 
-    if solved is True:
-        link1, link2, link3, link4 = link_pos_2d(angles)
-        link1_line[0].set_xdata([ORIGIN[0], link1[0]])
-        link1_line[0].set_ydata([ORIGIN[1], link1[1]])
-        link2_line[0].set_xdata([link1[0], link2[0]])
-        link2_line[0].set_ydata([link1[1], link2[1]])
-        link3_line[0].set_xdata([link2[0], link3[0]])
-        link3_line[0].set_ydata([link2[1], link3[1]])
-        link4_line[0].set_xdata([link3[0], link4[0]])
-        link4_line[0].set_ydata([link3[1], link4[1]])
+    link1, link2, link3, link4 = link_pos_2d(angles)
+    link1_line[0].set_xdata([ORIGIN[0], link1[0]])
+    link1_line[0].set_ydata([ORIGIN[1], link1[1]])
+    link2_line[0].set_xdata([link1[0], link2[0]])
+    link2_line[0].set_ydata([link1[1], link2[1]])
+    link3_line[0].set_xdata([link2[0], link3[0]])
+    link3_line[0].set_ydata([link2[1], link3[1]])
+    link4_line[0].set_xdata([link3[0], link4[0]])
+    link4_line[0].set_ydata([link3[1], link4[1]])
 
     fig.canvas.draw_idle()
 
