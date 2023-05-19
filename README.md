@@ -14,34 +14,34 @@ It can make more easy to develop MG400 control system with embeded IK solver.
 ## Requirements
 
 - [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
 
 ---
 
-## Launch
+## How to use
+
+### Launch an instance
 
 ```bash
-git clone git@github.com:HarvestX/MG400_Mock.git
 cd MG400_Mock
-make
+docker compose -f docker/docker-compose.yml up
 ```
 
-## Shutdown
+If you want to launch multiple instances (e.g. 3 instances), then
 
 ```bash
-make down
+docker compose -f docker/docker-compose.yml up --scale dobot=3
 ```
 
-## Connecting with MG400_ROS2
-
-[See here](https://github.com/HarvestX/MG400_ROS2/tree/humble/mg400_bringup#connect-launch-server-with-mg400_mock)
-
-## Develop
-
-### Running test
+### Shutdown
 
 ```bash
-make test
+docker compose -f docker/docker-compose.yml down
+```
+
+### Test (for debug)
+
+```bash
+docker compose -f docker/test-docker-compose.yml run test_dobot python3 -m unittest discover -s tests
 ```
 
 ## Setting user defined coordinate systems
