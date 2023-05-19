@@ -1,21 +1,7 @@
 version: "3.5"
 
 services:
-  nginx:
-    container_name: nginx
-    build: ./nginx
-    volumes:
-      - ./nginx/shared_files/nginx.conf:/etc/nginx/nginx.conf
-    ports:
-      - "29999:29999"
-      - "30003:30003"
-      - "30004:30004"
-    networks:
-      dobot_network:
-        ipv4_address: 172.10.0.2
-
   dobot:
-    container_name: dobot
     build:
       context: ./dobot
     volumes:
@@ -23,8 +9,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
     networks:
-      dobot_network:
-        ipv4_address: 172.10.0.3
+      - dobot_network
 
 networks:
   dobot_network:

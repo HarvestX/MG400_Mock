@@ -7,41 +7,47 @@ Dobot MG400 Mock Server Package.
 MG400_Mock let user to replace actual hardware to docker container system.
 It can make more easy to develop MG400 control system with embeded IK solver.
 
-![Image](media/mg400_mock.gif)
-
 ![Image](media/system_overview.svg)
 
-## Requirements
+## Prerequisities
 
 - [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
 
----
+## How to use
 
-## Launch
+### Launch an instance
 
 ```bash
-git clone git@github.com:HarvestX/MG400_Mock.git
 cd MG400_Mock
-make
+docker compose -f docker/docker-compose.yml up
 ```
 
-## Shutdown
+If you want to launch multiple instances (e.g. 3 instances), then
 
 ```bash
-make down
+docker compose -f docker/docker-compose.yml up --scale dobot=3
 ```
 
-## Connecting with MG400_ROS2
+### Identify container IP address
 
-[See](https://github.com/HarvestX/MG400_ROS2/tree/main/mg400_bringup#connect-launch-server-with-mg400_mock)
-
-## Develop
-
-### Running test
+Docker containers will run in docker's bridge network (`172.10.0.0/24`), and their IP address can be identified by the following command.
 
 ```bash
-make test
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' docker-dobot-1
+```
+
+If there are more than one docker-dobot container, their name would be `docker-dobot-2`, `docker-dobot-3` etc.
+
+### Shutdown
+
+```bash
+docker compose -f docker/docker-compose.yml down
+```
+
+### Test (for debug)
+
+```bash
+docker compose -f docker/test-docker-compose.yml run test_dobot python3 -m unittest discover -s tests
 ```
 
 ## Setting user defined coordinate systems
