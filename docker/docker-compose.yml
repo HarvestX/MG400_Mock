@@ -2,7 +2,6 @@ version: "3.5"
 
 services:
   dobot:
-    container_name: dobot
     build:
       context: ./dobot
     volumes:
@@ -10,8 +9,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
     networks:
-      dobot_network:
-        ipv4_address: 172.10.0.3
+      - dobot_network
 
 networks:
   dobot_network:
