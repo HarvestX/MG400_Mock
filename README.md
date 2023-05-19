@@ -34,7 +34,7 @@ make down
 
 ## Connecting with MG400_ROS2
 
-[See](https://github.com/HarvestX/MG400_ROS2/tree/main/mg400_bringup#connect-launch-server-with-mg400_mock)
+[See here](https://github.com/HarvestX/MG400_ROS2/tree/humble/mg400_bringup#connect-launch-server-with-mg400_mock)
 
 ## Develop
 
