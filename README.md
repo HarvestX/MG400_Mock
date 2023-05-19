@@ -7,8 +7,6 @@ Dobot MG400 Mock Server Package.
 MG400_Mock let user to replace actual hardware to docker container system.
 It can make more easy to develop MG400 control system with embeded IK solver.
 
-![Image](media/mg400_mock.gif)
-
 ![Image](media/system_overview.svg)
 
 ## Requirements
