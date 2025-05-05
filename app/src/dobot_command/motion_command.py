@@ -102,7 +102,7 @@ class MotionCommands:
             return False
 
         if len(args) > 4:
-            user = tool = speed_l = acc_l = args_parser_mov_l(args[7:])
+            user, tool, speed_l, acc_l = args_parser_mov_l(args[7:])
             if user is not None:
                 self.__dobot.set_user_index(user)
             if tool is not None:
