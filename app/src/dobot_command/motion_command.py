@@ -136,6 +136,7 @@ class MotionCommands:
             self.__dobot.log_warning_msg("The number of arguments is invalid.")
             return False
 
+        # TODO: Support options, e.g., user, tool, speed_j, acc_j, cp.
         q_target = list(map(float, args[0:4])) + [0.0, 0.0]
         if not self.__dobot.set_q_target(q_target):
             self.__dobot.log_warning_msg("The target is invalid.")
