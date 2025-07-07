@@ -2,9 +2,7 @@ services:
   test_dobot:
     container_name: test_dobot
     build:
-      context: ./dobot
-    volumes:
-      - ../app/src/:/app/src/
-      - ../app/tests/:/app/tests/
+      context: ./
+    image: test-docker-dobot
     environment:
       - PYTHONUNBUFFERED=1
