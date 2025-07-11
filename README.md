@@ -19,13 +19,20 @@ It can make more easy to develop MG400 control system with embeded IK solver.
 
 ```bash
 cd MG400_Mock
-docker compose -f docker/docker-compose.yml up
+docker compose -f docker-compose.yml up
 ```
 
 If you want to launch multiple instances (e.g. 3 instances), then
 
 ```bash
-docker compose -f docker/docker-compose.yml up --scale dobot=3
+docker compose -f docker-compose.yml up --scale dobot=3
+```
+
+### Build docker container image
+
+```bash
+cd MG400_Mock
+docker build . -t docker-dobot
 ```
 
 ### Identify container IP address
@@ -41,13 +48,13 @@ If there are more than one docker-dobot container, their name would be `docker-d
 ### Shutdown
 
 ```bash
-docker compose -f docker/docker-compose.yml down
+docker compose -f docker-compose.yml down
 ```
 
 ### Test (for debug)
 
 ```bash
-docker compose -f docker/test-docker-compose.yml run test_dobot python3 -m unittest discover -s tests
+docker compose -f test-docker-compose.yml run test_dobot python3 -m unittest discover -s tests
 ```
 
 ## Setting user defined coordinate systems
