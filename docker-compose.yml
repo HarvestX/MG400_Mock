@@ -1,13 +1,12 @@
 services:
   dobot:
     build:
-      context: ./dobot
-    volumes:
-      - ../app/src/:/app/
+      context: ./
     environment:
       - PYTHONUNBUFFERED=1
     networks:
-      - dobot_network
+      dobot_network:
+        ipv4_address: 172.10.0.2
 
 networks:
   dobot_network:
